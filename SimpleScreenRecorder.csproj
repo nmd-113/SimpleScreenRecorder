@@ -104,7 +104,6 @@
     <EmbeddedResource Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="FodyWeavers.xml" />
     <None Include="Resources\icon_naetech_small.png" />
     <Content Include="screenrec.ico" />
   </ItemGroup>
