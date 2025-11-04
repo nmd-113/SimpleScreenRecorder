@@ -37,8 +37,7 @@ Designed for quick, set-and-forget operation.
 
 ### Installation
 1.  Download the latest stable release from the [releases page](https://github.com/nmd-113/SimpleScreenRecorder/releases).
-2.  Extract the contents of the archive.
-3.  Run `SimpleScreenRecorder.exe`.
+2.  Run `SimpleScreenRecorder.exe`.
 
 ### Usage
 1.  Set the desired **Output Folder**.
