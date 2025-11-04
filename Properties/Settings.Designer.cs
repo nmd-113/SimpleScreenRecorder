@@ -118,5 +118,17 @@ namespace SimpleScreenRecorder.Properties {
                 this["VBREnabled"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool HideOnRec {
+            get {
+                return ((bool)(this["HideOnRec"]));
+            }
+            set {
+                this["HideOnRec"] = value;
+            }
+        }
     }
 }

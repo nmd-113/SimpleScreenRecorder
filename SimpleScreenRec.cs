@@ -113,6 +113,7 @@ namespace SimpleScreenRecorder
             if (!string.IsNullOrEmpty(Properties.Settings.Default.OutputPath))
                 txtPath.Text = Properties.Settings.Default.OutputPath;
 
+            hideonrecordChkBox.Checked = Properties.Settings.Default.HideOnRec;
             trackBarQuality.Value = Properties.Settings.Default.VideoQuality;
             fpsSelect.Value = Properties.Settings.Default.FrameRate;
             TrackBarQuality_Scroll(null, null);
@@ -321,6 +322,7 @@ namespace SimpleScreenRecorder
             Properties.Settings.Default.DisplaySelection = (int)numericUpDownMonitor.Value;
             Properties.Settings.Default.CodecSelection = Convert.ToString(comboBoxCodec.SelectedItem);
             Properties.Settings.Default.VBREnabled = vbrCheck.Checked;
+            Properties.Settings.Default.HideOnRec = hideonrecordChkBox.Checked;
 
             Properties.Settings.Default.Save();
         }
