@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace SimpleScreenRecorder
@@ -63,13 +64,18 @@ namespace SimpleScreenRecorder
 
         private void InitializeToolTips()
         {
-            toolTip.SetToolTip(btnBrowse, "Browse to select output file location.");
-            toolTip.SetToolTip(cbRecordSystemAudio, "Record Windows system audio.");
-            toolTip.SetToolTip(fpsLbl, "Increase the framerate of the recording up to 120FPS.");
-            toolTip.SetToolTip(dspLbl, "Select the screen you want to record.");
-            toolTip.SetToolTip(btnStart, "Start recording the screen.");
+            toolTip.SetToolTip(btnBrowse, "Select the video output file location.");
+            toolTip.SetToolTip(cbRecordSystemAudio, "Record all system (Windows) audio.");
+            toolTip.SetToolTip(fpsLbl, "Adjust the recording framerate (FPS). Up to 120 FPS.");
+            toolTip.SetToolTip(dspLbl, "Select the screen or monitor to record.");
+            toolTip.SetToolTip(btnStart, "Start screen recording.");
             toolTip.SetToolTip(btnStop, "Stop the current recording.");
-            toolTip.SetToolTip(hideonrecordChkBox, "Automatically minimize the app to the system tray when recording starts.");
+            toolTip.SetToolTip(hideonrecordChkBox, "Minimize the app to the system tray automatically when recording starts.");
+            toolTip.SetToolTip(trackBarQuality, "Adjust the video quality and bitrate of the recording.");
+            toolTip.SetToolTip(comboBoxMic, "Select a microphone for audio input.");
+            toolTip.SetToolTip(comboBoxCodec, "Choose the video codec: H.264 (Best Compatibility) or H.265 (Best Efficiency).");
+            toolTip.SetToolTip(cbrCheck, "Use Constant Bitrate (CBR) encoding (Results in larger file sizes).");
+            toolTip.SetToolTip(vbrCheck, "Use Variable Bitrate (VBR) encoding based on quality (Results in smaller file sizes).");
         }
 
         private void LoadAudioDevices()
@@ -96,6 +102,7 @@ namespace SimpleScreenRecorder
             {
                 comboBoxMic.Items.Clear();
                 comboBoxMic.Items.Add("None");
+                _inputDevicesMap = new Dictionary<string, string>();
                 MessageBox.Show("Error loading audio devices: " + ex.Message, "Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
@@ -109,6 +116,17 @@ namespace SimpleScreenRecorder
             trackBarQuality.Value = Properties.Settings.Default.VideoQuality;
             fpsSelect.Value = Properties.Settings.Default.FrameRate;
             TrackBarQuality_Scroll(null, null);
+            
+            if (Properties.Settings.Default.VBREnabled)
+            {
+                vbrCheck.Checked = true;
+                cbrCheck.Checked = false;
+            }
+            else
+            {
+                vbrCheck.Checked = false;
+                cbrCheck.Checked = true;
+            }
 
             cbRecordSystemAudio.Checked = Properties.Settings.Default.SystemAudioEnabled;
 
@@ -123,6 +141,12 @@ namespace SimpleScreenRecorder
                 numericUpDownMonitor.Value = savedDisplay;
             else
                 numericUpDownMonitor.Value = 1;
+
+            string savedCodec = Properties.Settings.Default.CodecSelection;
+            if (comboBoxCodec.Items.Contains(savedCodec))
+                comboBoxCodec.SelectedItem = savedCodec;
+            else
+                comboBoxCodec.SelectedIndex = 0;
         }
 
         #endregion
@@ -173,26 +197,44 @@ namespace SimpleScreenRecorder
             lblStatus.ForeColor = enabled ? System.Drawing.Color.White : System.Drawing.Color.Red;
         }
 
-        private void DisposeRecorder()
+        private async Task StopAndDisposeRecorderAsync()
         {
-            if (_recorder != null)
+            if (_recorder == null) return;
+
+            try
             {
-                try
+                if (_recorder.Status == RecorderStatus.Recording)
                 {
-                    if (_recorder.Status == RecorderStatus.Recording)
-                        _recorder.Stop();
+                    var tcs = new System.Threading.Tasks.TaskCompletionSource<bool>();
+
+                    void onComplete(object s, RecordingCompleteEventArgs e)
+                    {
+                        if (_recorder != null)
+                        {
+                            _recorder.OnRecordingComplete -= onComplete;
+                        }
+                        tcs.TrySetResult(true);
+                    }
+
+                    _recorder.OnRecordingComplete += onComplete;
+                    _recorder.Stop();
+
+                    await tcs.Task;
                 }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine("Error stopping recorder: " + ex.Message);
-                }
-                finally
-                {
-                    _recorder.Dispose();
-                    _recorder = null;
-                }
+
+                _recorder.Dispose();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("Error stopping/disposing recorder: " + ex.Message);
+                _recorder?.Dispose();
+            }
+            finally
+            {
+                _recorder = null;
             }
         }
+
 
         private void DetectMonitors()
         {
@@ -233,18 +275,52 @@ namespace SimpleScreenRecorder
             return options;
         }
 
+        private IVideoEncoder GetVideoEncoder(string selectedCodec)
+        {
+            bool useQualityMode = vbrCheck.Checked;
+            bool isHevc = (selectedCodec == "H.265 (HEVC)");
+
+            if (isHevc)
+            {
+                return new H265VideoEncoder
+                {
+                    BitrateMode = useQualityMode
+                        ? H265BitrateControlMode.Quality
+                        : H265BitrateControlMode.CBR,
+                    EncoderProfile = H265Profile.Main
+                };
+            }
+            else
+            {
+                return new H264VideoEncoder
+                {
+                    BitrateMode = useQualityMode
+                        ? H264BitrateControlMode.Quality
+                        : H264BitrateControlMode.CBR,
+                    EncoderProfile = H264Profile.Main
+                };
+            }
+        }
+
         private void SaveSettings()
         {
             string path = txtPath.Text;
-            Properties.Settings.Default.OutputPath = Path.HasExtension(path)
+
+            string directoryToSave = Path.HasExtension(path)
                 ? Path.GetDirectoryName(path)
                 : path;
+
+            Properties.Settings.Default.OutputPath = string.IsNullOrWhiteSpace(directoryToSave)
+                ? _videosFolder
+                : directoryToSave;
 
             Properties.Settings.Default.VideoQuality = trackBarQuality.Value;
             Properties.Settings.Default.FrameRate = (int)fpsSelect.Value;
             Properties.Settings.Default.SystemAudioEnabled = cbRecordSystemAudio.Checked;
             Properties.Settings.Default.MicSelectionIndex = comboBoxMic.SelectedIndex;
             Properties.Settings.Default.DisplaySelection = (int)numericUpDownMonitor.Value;
+            Properties.Settings.Default.CodecSelection = Convert.ToString(comboBoxCodec.SelectedItem);
+            Properties.Settings.Default.VBREnabled = vbrCheck.Checked;
 
             Properties.Settings.Default.Save();
         }
@@ -264,7 +340,7 @@ namespace SimpleScreenRecorder
                 if (sfd.ShowDialog() == DialogResult.OK)
                 {
                     _outputPath = sfd.FileName;
-                    txtPath.Text = _outputPath;
+                    txtPath.Text = Path.GetDirectoryName(_outputPath);
                 }
             }
         }
@@ -274,7 +350,6 @@ namespace SimpleScreenRecorder
             try
             {
                 _outputPath = ResolveOutputPath(txtPath.Text);
-                txtPath.Text = _outputPath;
 
                 var options = GetSelectedMonitorOptions();
 
@@ -308,12 +383,19 @@ namespace SimpleScreenRecorder
                     InputVolume = 1.0f
                 };
 
+                string selectedCodec = Convert.ToString(comboBoxCodec.SelectedItem);
+                if (string.IsNullOrEmpty(selectedCodec))
+                {
+                    selectedCodec = "H.264 (AVC)";
+                }
+
                 options.VideoEncoderOptions = new VideoEncoderOptions
                 {
                     Framerate = (int)fpsSelect.Value,
                     Bitrate = GetBitrateByQuality(trackBarQuality.Value),
                     IsFixedFramerate = true,
-                    IsHardwareEncodingEnabled = true
+                    IsHardwareEncodingEnabled = true,
+                    Encoder = GetVideoEncoder(selectedCodec)
                 };
 
                 _recorder = Recorder.CreateRecorder(options);
@@ -368,7 +450,7 @@ namespace SimpleScreenRecorder
                         {
                             lblStatus.Text = "Status: " + ((RecorderStatus)evt.Status).ToString();
 
-                            if (hideonrecordChkBox.Checked)
+                            if (evt.Status == RecorderStatus.Recording && hideonrecordChkBox.Checked)
                             {
                                 WindowState = FormWindowState.Minimized;
                                 MinimizeApp();
@@ -394,7 +476,7 @@ namespace SimpleScreenRecorder
             }
         }
 
-        private void BtnStop_Click(object sender, EventArgs e)
+        private async Task StopRecording(object sender, EventArgs e)
         {
             try
             {
@@ -404,7 +486,7 @@ namespace SimpleScreenRecorder
                     return;
                 }
 
-                DisposeRecorder();
+                await StopAndDisposeRecorderAsync();
                 lblStatus.Text = "Status: Stopped";
                 SetControlsEnabled(true);
             }
@@ -421,11 +503,26 @@ namespace SimpleScreenRecorder
             }
         }
 
+        private async void BtnStop_Click(object sender, EventArgs e)
+        {
+            await StopRecording(sender, e);
+        }
+
         #endregion
 
         #region Form Events
 
-        private void ScreenRecorder_FormClosing(object sender, FormClosingEventArgs e)
+        private void CbrCheck_CheckedChanged(object sender, EventArgs e)
+        {
+            vbrCheck.Checked = !cbrCheck.Checked;
+        }
+
+        private void VbrCheck_CheckedChanged(object sender, EventArgs e)
+        {
+            cbrCheck.Checked = !vbrCheck.Checked;
+        }
+
+        private async void ScreenRecorder_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (_recorder != null && _recorder.Status == RecorderStatus.Recording)
             {
@@ -439,7 +536,7 @@ namespace SimpleScreenRecorder
                     return;
                 }
 
-                DisposeRecorder();
+                await StopAndDisposeRecorderAsync();
             }
 
             SaveSettings();
@@ -458,7 +555,7 @@ namespace SimpleScreenRecorder
                 default: qualityName = "Medium (10 Mbps)"; break;
             }
 
-            lblQualityValue.Text = "Video Quality: " + qualityName;
+            lblQualityValue.Text = "Quality: " + qualityName;
         }
 
         #endregion
@@ -467,7 +564,8 @@ namespace SimpleScreenRecorder
 
         private void ExitBtn_Click(object sender, EventArgs e)
         {
-            Application.Exit();
+            SaveSettings();
+            Close();
         }
 
         private void HideBtn_Click(object sender, EventArgs e)
@@ -510,29 +608,13 @@ namespace SimpleScreenRecorder
             notifyIcon.Visible = false;
         }
 
-        private void ScreenRecorder_MouseDown(object sender, MouseEventArgs e)
+        private void Handle_Window_Drag(object sender, MouseEventArgs e)
         {
-            if (e.Button == MouseButtons.Left) { ReleaseCapture(); SendMessage(Handle, WM_NCLBUTTONDOWN, HT_CAPTION, 0); }
-        }
-
-        private void Label1_MouseDown(object sender, MouseEventArgs e)
-        {
-            if (e.Button == MouseButtons.Left) { ReleaseCapture(); SendMessage(Handle, WM_NCLBUTTONDOWN, HT_CAPTION, 0); }
-        }
-
-        private void AppverLbl_MouseDown(object sender, MouseEventArgs e)
-        {
-            if (e.Button == MouseButtons.Left) { ReleaseCapture(); SendMessage(Handle, WM_NCLBUTTONDOWN, HT_CAPTION, 0); }
-        }
-
-        private void PictureBox1_MouseDown(object sender, MouseEventArgs e)
-        {
-            if (e.Button == MouseButtons.Left) { ReleaseCapture(); SendMessage(Handle, WM_NCLBUTTONDOWN, HT_CAPTION, 0); }
-        }
-
-        private void LblStatus_MouseDown(object sender, MouseEventArgs e)
-        {
-            if (e.Button == MouseButtons.Left) { ReleaseCapture(); SendMessage(Handle, WM_NCLBUTTONDOWN, HT_CAPTION, 0); }
+            if (e.Button == MouseButtons.Left)
+            {
+                ReleaseCapture();
+                SendMessage(Handle, WM_NCLBUTTONDOWN, HT_CAPTION, 0);
+            }
         }
 
         #endregion

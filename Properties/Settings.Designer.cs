@@ -94,5 +94,29 @@ namespace SimpleScreenRecorder.Properties {
                 this["DisplaySelection"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public string CodecSelection {
+            get {
+                return ((string)(this["CodecSelection"]));
+            }
+            set {
+                this["CodecSelection"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool VBREnabled {
+            get {
+                return ((bool)(this["VBREnabled"]));
+            }
+            set {
+                this["VBREnabled"] = value;
+            }
+        }
     }
 }
