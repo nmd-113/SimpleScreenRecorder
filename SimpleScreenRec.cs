@@ -42,6 +42,7 @@ namespace SimpleScreenRecorder
             try
             {
                 LoadAudioDevices();
+                DetectMonitors();
                 LoadSettings();
             }
             catch (Exception ex)
@@ -64,7 +65,8 @@ namespace SimpleScreenRecorder
         {
             toolTip.SetToolTip(btnBrowse, "Browse to select output file location.");
             toolTip.SetToolTip(cbRecordSystemAudio, "Record Windows system audio.");
-            toolTip.SetToolTip(fpsLbl, "Enable 60 FPS recording. Unchecked means 30 FPS.");
+            toolTip.SetToolTip(fpsLbl, "Increase the framerate of the recording up to 120FPS.");
+            toolTip.SetToolTip(dspLbl, "Select the screen you want to record.");
             toolTip.SetToolTip(btnStart, "Start recording the screen.");
             toolTip.SetToolTip(btnStop, "Stop the current recording.");
             toolTip.SetToolTip(hideonrecordChkBox, "Automatically minimize the app to the system tray when recording starts.");
@@ -88,8 +90,6 @@ namespace SimpleScreenRecorder
                 else
                 {
                     _inputDevicesMap = new Dictionary<string, string>();
-                    MessageBox.Show("No audio input devices detected.", "Info",
-                        MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
             catch (Exception ex)
@@ -117,6 +117,12 @@ namespace SimpleScreenRecorder
                 comboBoxMic.SelectedIndex = savedIndex;
             else
                 comboBoxMic.SelectedIndex = 0;
+
+            int savedDisplay = Properties.Settings.Default.DisplaySelection;
+            if (savedDisplay >= numericUpDownMonitor.Minimum && savedDisplay <= numericUpDownMonitor.Maximum)
+                numericUpDownMonitor.Value = savedDisplay;
+            else
+                numericUpDownMonitor.Value = 1;
         }
 
         #endregion
@@ -188,6 +194,45 @@ namespace SimpleScreenRecorder
             }
         }
 
+        private void DetectMonitors()
+        {
+            int monitorCount = Screen.AllScreens.Length;
+            numericUpDownMonitor.Minimum = 1;
+            numericUpDownMonitor.Maximum = Math.Max(1, monitorCount);
+            numericUpDownMonitor.Value = 1;
+        }
+
+        private RecorderOptions GetSelectedMonitorOptions()
+        {
+            int selectedMonitorIndex = (int)numericUpDownMonitor.Value - 1;
+            var screens = Screen.AllScreens;
+
+            if (selectedMonitorIndex < 0 || selectedMonitorIndex >= screens.Length)
+                throw new ArgumentOutOfRangeException(nameof(selectedMonitorIndex), "Monitor selection is out of range.");
+
+            string deviceName = $@"\\.\DISPLAY{selectedMonitorIndex + 1}";
+
+            var displaySource = new DisplayRecordingSource
+            {
+                DeviceName = deviceName
+            };
+
+            var options = new RecorderOptions
+            {
+                SourceOptions = new SourceOptions
+                {
+                    RecordingSources = new System.Collections.Generic.List<RecordingSourceBase> { displaySource }
+                },
+
+                OutputOptions = new OutputOptions
+                {
+                    RecorderMode = RecorderMode.Video
+                }
+            };
+
+            return options;
+        }
+
         private void SaveSettings()
         {
             string path = txtPath.Text;
@@ -199,6 +244,7 @@ namespace SimpleScreenRecorder
             Properties.Settings.Default.FrameRate = (int)fpsSelect.Value;
             Properties.Settings.Default.SystemAudioEnabled = cbRecordSystemAudio.Checked;
             Properties.Settings.Default.MicSelectionIndex = comboBoxMic.SelectedIndex;
+            Properties.Settings.Default.DisplaySelection = (int)numericUpDownMonitor.Value;
 
             Properties.Settings.Default.Save();
         }
@@ -230,7 +276,7 @@ namespace SimpleScreenRecorder
                 _outputPath = ResolveOutputPath(txtPath.Text);
                 txtPath.Text = _outputPath;
 
-                var options = RecorderOptions.DefaultMainMonitor;
+                var options = GetSelectedMonitorOptions();
 
                 bool recordSystemAudio = cbRecordSystemAudio.Checked;
                 bool useMic = comboBoxMic.SelectedIndex > 0;

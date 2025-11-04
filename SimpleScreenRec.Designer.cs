@@ -44,17 +44,20 @@
             this.appverLbl = new System.Windows.Forms.Label();
             this.notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
             this.hideonrecordChkBox = new System.Windows.Forms.CheckBox();
+            this.dspLbl = new System.Windows.Forms.Label();
+            this.numericUpDownMonitor = new System.Windows.Forms.NumericUpDown();
             ((System.ComponentModel.ISupportInitialize)(this.trackBarQuality)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.fpsSelect)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownMonitor)).BeginInit();
             this.SuspendLayout();
             // 
             // btnStart
             // 
-            this.btnStart.BackColor = System.Drawing.Color.SteelBlue;
+            this.btnStart.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(19)))), ((int)(((byte)(75)))), ((int)(((byte)(141)))));
             this.btnStart.FlatAppearance.BorderSize = 0;
-            this.btnStart.FlatAppearance.MouseDownBackColor = System.Drawing.Color.DarkSlateBlue;
-            this.btnStart.FlatAppearance.MouseOverBackColor = System.Drawing.Color.DeepSkyBlue;
+            this.btnStart.FlatAppearance.MouseDownBackColor = System.Drawing.Color.MidnightBlue;
+            this.btnStart.FlatAppearance.MouseOverBackColor = System.Drawing.Color.SteelBlue;
             this.btnStart.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnStart.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnStart.ForeColor = System.Drawing.Color.White;
@@ -140,7 +143,7 @@
             // 
             // lblStatus
             // 
-            this.lblStatus.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(40)))), ((int)(((byte)(60)))));
+            this.lblStatus.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(20)))), ((int)(((byte)(40)))));
             this.lblStatus.ForeColor = System.Drawing.Color.White;
             this.lblStatus.Location = new System.Drawing.Point(10, 266);
             this.lblStatus.Name = "lblStatus";
@@ -157,20 +160,20 @@
             this.trackBarQuality.Maximum = 5;
             this.trackBarQuality.Minimum = 1;
             this.trackBarQuality.Name = "trackBarQuality";
-            this.trackBarQuality.Size = new System.Drawing.Size(480, 45);
+            this.trackBarQuality.Size = new System.Drawing.Size(244, 45);
             this.trackBarQuality.TabIndex = 8;
             this.trackBarQuality.Value = 2;
             this.trackBarQuality.Scroll += new System.EventHandler(this.TrackBarQuality_Scroll);
             // 
             // lblQualityValue
             // 
-            this.lblQualityValue.AutoSize = true;
             this.lblQualityValue.ForeColor = System.Drawing.Color.White;
-            this.lblQualityValue.Location = new System.Drawing.Point(10, 105);
+            this.lblQualityValue.Location = new System.Drawing.Point(13, 105);
             this.lblQualityValue.Name = "lblQualityValue";
-            this.lblQualityValue.Size = new System.Drawing.Size(165, 14);
+            this.lblQualityValue.Size = new System.Drawing.Size(241, 20);
             this.lblQualityValue.TabIndex = 9;
             this.lblQualityValue.Text = "Video Quality: Medium (10 Mbps)";
+            this.lblQualityValue.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // exitBtn
             // 
@@ -254,7 +257,7 @@
             0,
             0,
             0});
-            this.fpsSelect.Location = new System.Drawing.Point(431, 102);
+            this.fpsSelect.Location = new System.Drawing.Point(440, 128);
             this.fpsSelect.Maximum = new decimal(new int[] {
             120,
             0,
@@ -266,7 +269,7 @@
             0,
             0});
             this.fpsSelect.Name = "fpsSelect";
-            this.fpsSelect.Size = new System.Drawing.Size(59, 20);
+            this.fpsSelect.Size = new System.Drawing.Size(50, 20);
             this.fpsSelect.TabIndex = 17;
             this.fpsSelect.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.fpsSelect.Value = new decimal(new int[] {
@@ -279,7 +282,7 @@
             // 
             this.fpsLbl.AutoSize = true;
             this.fpsLbl.ForeColor = System.Drawing.Color.White;
-            this.fpsLbl.Location = new System.Drawing.Point(366, 105);
+            this.fpsLbl.Location = new System.Drawing.Point(378, 131);
             this.fpsLbl.Name = "fpsLbl";
             this.fpsLbl.Size = new System.Drawing.Size(59, 14);
             this.fpsLbl.TabIndex = 18;
@@ -315,13 +318,48 @@
             this.hideonrecordChkBox.Text = "Hide";
             this.hideonrecordChkBox.UseVisualStyleBackColor = true;
             // 
+            // dspLbl
+            // 
+            this.dspLbl.AutoSize = true;
+            this.dspLbl.ForeColor = System.Drawing.Color.White;
+            this.dspLbl.Location = new System.Drawing.Point(266, 131);
+            this.dspLbl.Name = "dspLbl";
+            this.dspLbl.Size = new System.Drawing.Size(45, 14);
+            this.dspLbl.TabIndex = 22;
+            this.dspLbl.Text = "Display:";
+            // 
+            // numericUpDownMonitor
+            // 
+            this.numericUpDownMonitor.Location = new System.Drawing.Point(314, 128);
+            this.numericUpDownMonitor.Maximum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.numericUpDownMonitor.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.numericUpDownMonitor.Name = "numericUpDownMonitor";
+            this.numericUpDownMonitor.Size = new System.Drawing.Size(50, 20);
+            this.numericUpDownMonitor.TabIndex = 21;
+            this.numericUpDownMonitor.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.numericUpDownMonitor.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            // 
             // ScreenRecorder
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(20)))), ((int)(((byte)(40)))));
+            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(14)))), ((int)(((byte)(15)))), ((int)(((byte)(20)))));
             this.ClientSize = new System.Drawing.Size(500, 300);
+            this.Controls.Add(this.dspLbl);
+            this.Controls.Add(this.numericUpDownMonitor);
             this.Controls.Add(this.hideonrecordChkBox);
             this.Controls.Add(this.appverLbl);
             this.Controls.Add(this.fpsLbl);
@@ -354,6 +392,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.trackBarQuality)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.fpsSelect)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownMonitor)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -372,5 +411,7 @@
         private System.Windows.Forms.Label appverLbl;
         private System.Windows.Forms.NotifyIcon notifyIcon;
         private System.Windows.Forms.CheckBox hideonrecordChkBox;
+        private System.Windows.Forms.Label dspLbl;
+        private System.Windows.Forms.NumericUpDown numericUpDownMonitor;
     }
 }

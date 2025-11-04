@@ -55,8 +55,14 @@
     <ApplicationIcon>screenrec.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ScreenRecorderLib, Version=1.0.9160.28578, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Resources\ScreenRecorderLib.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -89,7 +95,6 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -105,14 +110,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\icon_naetech_small.png" />
+    <EmbeddedResource Include="Resources\ScreenRecorderLib.dll" />
     <Content Include="screenrec.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="packages\ScreenRecorderLib.6.5.1\build\ScreenRecorderLib.targets" Condition="Exists('packages\ScreenRecorderLib.6.5.1\build\ScreenRecorderLib.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('packages\ScreenRecorderLib.6.5.1\build\ScreenRecorderLib.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\ScreenRecorderLib.6.5.1\build\ScreenRecorderLib.targets'))" />
-  </Target>
 </Project>

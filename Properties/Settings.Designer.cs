@@ -82,5 +82,17 @@ namespace SimpleScreenRecorder.Properties {
                 this["MicSelectionIndex"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1")]
+        public int DisplaySelection {
+            get {
+                return ((int)(this["DisplaySelection"]));
+            }
+            set {
+                this["DisplaySelection"] = value;
+            }
+        }
     }
 }
