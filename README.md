@@ -1,58 +1,63 @@
-# Simple Screen Recorder
+# Simple Screen Recorder 📹
 
-Simple Screen Recorder is a lightweight Windows application designed to make screen recording simple, fast, and customizable. Capture your desktop, gaming sessions, tutorials, or presentations in high-quality video and audio with minimal setup.
+Simple Screen Recorder (SSR) is a **high-performance, lightweight Windows application** designed for fast and customizable screen capture. It's built for efficiency, allowing you to record desktop activity, gameplay, tutorials, or presentations in high quality with minimal resource overhead.
 
 ---
+![alt text](https://www.naetech.ro/wp-content/uploads/2025/11/screenrecorder-e1762297808779.jpg)
+---
 
-## Features
+## Key Features
 
-### Screen Recording
-Record your screen with full control over quality and frame rate.
+### Quality and Performance ⚙️
+SSR utilizes modern encoding techniques to deliver smooth video captures.
 
-Key features include:  
-* **High Frame Rates:** Supports up to **120 FPS** for ultra-smooth video.  
-* **Video Quality:** Adjustable bitrate from Low (3 Mbps) to Maximum (100 Mbps).  
-* **Audio Recording:** Capture system sound, microphone, or both simultaneously.  
-* **Custom Output:** Choose where to save your recordings with a simple browse option.  
-* **Automatic Settings:** Keeps your last-used configuration for quick setup next time.  
+* **High Frame Rate:** Supports up to **120 FPS** for professional, ultra-smooth motion in gameplay and animations.
+* **Hardware Acceleration:** Leverages your GPU for encoding (**Hardware Encoding Enabled**), minimizing CPU load (perfect for gaming sessions).
+* **Codec Flexibility:** Choice between **H.264 (AVC)** and **H.265 (HEVC)** video codecs.
+* **Bitrate Control:** Select **Constant Bitrate (CBR)** or **Variable Bitrate (VBR)** (Quality Mode) with levels from Low (3 Mbps) to Maximum (100 Mbps).
+* **Multi-Monitor Support:** Easily select which connected display you want to record.
 
-### User-Friendly Interface
-Designed for ease of use without complicated menus.  
+### Audio and Input Controls 🎤
+Capture your sound environment precisely.
 
-Available options include:  
-* **Start/Stop Recording:** One-click controls.  
-* **Frame Rate Selection:** Choose 30, 60, or higher FPS.  
-* **Video Quality Slider:** Adjust bitrate to balance quality and file size.  
-* **Tray Minimization:** Minimize the app while recording without interrupting your work.  
-* **Notifications:** Alerts when recording starts, stops, or completes.  
+* **Dual Audio Capture:** Record **System Audio** (internal sounds) and **Microphone Input** simultaneously.
+* **Device Selection:** Clear selection for your desired microphone input device.
+
+### User Experience (UX) ✨
+Designed for quick, set-and-forget operation.
+
+* **Simple UI:** Intuitive controls for output path, quality, and start/stop functions.
+* **Automatic Minimization:** Option to automatically **minimize to system tray** upon recording start.
+* **Persistence:** Automatically saves your last-used settings (quality, frame rate, device selection) for rapid recording deployment.
+* **Notifications:** System tray alerts upon recording completion or failure.
 
 ---
 
 ## Getting Started
 
 ### Installation
-1. Download the latest release from the [releases page](https://github.com/nmd-113/SimpleScreenRecorder/releases).  
-2. Extract the archive to your preferred location.  
-3. Run `SimpleScreenRecorder.exe`.
+1.  Download the latest stable release from the [releases page](https://github.com/nmd-113/SimpleScreenRecorder/releases).
+2.  Extract the contents of the archive.
+3.  Run `SimpleScreenRecorder.exe`.
 
 ### Usage
-1. Open the application.  
-2. Select your preferred **output location**, **microphone**, and **video quality**.  
-3. Adjust **frame rate** if desired.  
-4. Click **Start** to begin recording.  
-5. Click **Stop** to finish recording. The video will be saved automatically to the selected location.  
+1.  Set the desired **Output Folder**.
+2.  Configure **Frame Rate**, **Quality**, **Codec**, and **Bitrate Mode (CBR/VBR)**.
+3.  Select your **Monitor** and configure **Audio Input** options (System Audio, Microphone).
+4.  Click **Start** to begin the recording.
+5.  Click **Stop** to finalize the video. The file will be saved automatically to your selected location.
 
 ---
 
 ## Contributing
-Contributions are welcome! If you have ideas for new features, bug fixes, or improvements, please open an issue or submit a pull request.
+We welcome contributions! If you have suggestions for features, encounter a bug, or have ideas for performance improvements, please feel free to open an issue or submit a pull request.
 
 ---
 
 ## Support
-If you encounter issues or have questions, please open an issue on the GitHub repository.
+For any questions or issues, please use the GitHub repository's issue tracker.
 
 ---
 
 ## License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for full details.
