@@ -1,6 +1,6 @@
 # Simple Screen Recorder 📹
 
-Simple Screen Recorder (SSR) is a **high-performance, lightweight Windows application** designed for fast and customizable screen capture. **Built on the robust ScreenRecorderLib**, SSR is optimized for efficiency, allowing you to record desktop activity, gameplay, tutorials, or presentations in high quality with minimal resource overhead.
+Simple Screen Recorder (SSR) is a **high-performance, lightweight Windows application** designed for fast and customizable screen capture. Built on the robust open-source library **[ScreenRecorderLib](https://github.com/sskodje/ScreenRecorderLib)**, SSR is optimized for efficiency, allowing you to record desktop activity, gameplay, tutorials, or presentations in high quality with minimal resource overhead.
 
 ---
 ![alt text](https://www.naetech.ro/wp-content/uploads/2025/11/screenrecorder-e1762297808779.jpg)
