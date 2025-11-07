@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Runtime.InteropServices;
 
 namespace SimpleScreenRecorder
 {
@@ -15,12 +16,24 @@ namespace SimpleScreenRecorder
 
         private const int WM_NCLBUTTONDOWN = 0xA1;
         private const int HT_CAPTION = 0x2;
+        private const int WM_HOTKEY = 0x0312;
+        private const int HOTKEY_ID_START = 9000;
+        private const int HOTKEY_ID_STOP = 9001;
 
         [System.Runtime.InteropServices.DllImport("user32.dll")]
         private static extern int SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
 
         [System.Runtime.InteropServices.DllImport("user32.dll")]
         private static extern bool ReleaseCapture();
+
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern IntPtr GetDesktopWindow();
+
+        [DllImport("user32.dll")]
+        private static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
+
+        [DllImport("user32.dll")]
+        private static extern bool UnregisterHotKey(IntPtr hWnd, int id);
 
         #endregion
 
@@ -30,6 +43,8 @@ namespace SimpleScreenRecorder
         private string _outputPath;
         private readonly string _videosFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyVideos);
         private Dictionary<string, string> _inputDevicesMap;
+        private List<RecordableDisplay> _availableDisplays;
+
 
         #endregion
 
@@ -38,7 +53,9 @@ namespace SimpleScreenRecorder
         public ScreenRecorder()
         {
             InitializeComponent();
+
             appverLbl.Text = "v" + Application.ProductVersion;
+            notifyIcon.ContextMenuStrip = contextMenuStrip;
 
             try
             {
@@ -60,7 +77,87 @@ namespace SimpleScreenRecorder
 
         #endregion
 
+        #region Hotkey Management
+
+        private const uint MOD_NOREPEAT = 0x4000;
+        private Dictionary<int, bool> _hotkeyCooldown = new Dictionary<int, bool>();
+
+        protected override void OnHandleCreated(EventArgs e)
+        {
+            base.OnHandleCreated(e);
+            RegisterHotkeys();
+        }
+
+        private void RegisterHotkeys()
+        {
+            bool startRegistered = RegisterHotKey(this.Handle, HOTKEY_ID_START, MOD_NOREPEAT, (uint)Keys.F9);
+            bool stopRegistered = RegisterHotKey(this.Handle, HOTKEY_ID_STOP, MOD_NOREPEAT, (uint)Keys.F10);
+
+            if (!startRegistered) Debug.WriteLine("Failed to register F9 hotkey.");
+            if (!stopRegistered) Debug.WriteLine("Failed to register F10 hotkey.");
+
+            _hotkeyCooldown[HOTKEY_ID_START] = false;
+            _hotkeyCooldown[HOTKEY_ID_STOP] = false;
+        }
+
+        protected override void WndProc(ref Message m)
+        {
+            if (m.Msg == WM_HOTKEY)
+            {
+                int id = m.WParam.ToInt32();
+
+                if (_hotkeyCooldown.ContainsKey(id) && _hotkeyCooldown[id])
+                    return;
+
+                _hotkeyCooldown[id] = true;
+
+                var timer = new Timer { Interval = 500, Enabled = true };
+                timer.Tick += (s, ev) =>
+                {
+                    _hotkeyCooldown[id] = false;
+                    timer.Stop();
+                    timer.Dispose();
+                };
+
+                _ = HandleHotkeyAsync(id);
+                return;
+            }
+
+            base.WndProc(ref m);
+        }
+
+        private async Task HandleHotkeyAsync(int id)
+        {
+            try
+            {
+                if (id == HOTKEY_ID_START)
+                {
+                    if (_recorder == null || _recorder.Status != RecorderStatus.Recording)
+                        await StartRecordingAsync(this, EventArgs.Empty);
+                }
+                else if (id == HOTKEY_ID_STOP)
+                {
+                    if (_recorder != null && _recorder.Status == RecorderStatus.Recording)
+                        await StopRecording(this, EventArgs.Empty);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("Hotkey handling error: " + ex.Message);
+            }
+        }
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            UnregisterHotKey(this.Handle, HOTKEY_ID_START);
+            UnregisterHotKey(this.Handle, HOTKEY_ID_STOP);
+            base.OnFormClosing(e);
+        }
+
+        #endregion
+
         #region Initialization
+
 
         private void InitializeToolTips()
         {
@@ -137,11 +234,11 @@ namespace SimpleScreenRecorder
             else
                 comboBoxMic.SelectedIndex = 0;
 
-            int savedDisplay = Properties.Settings.Default.DisplaySelection;
-            if (savedDisplay >= numericUpDownMonitor.Minimum && savedDisplay <= numericUpDownMonitor.Maximum)
-                numericUpDownMonitor.Value = savedDisplay;
-            else
-                numericUpDownMonitor.Value = 1;
+            int savedDisplayIndex = Properties.Settings.Default.DisplaySelection;
+            if (savedDisplayIndex >= 0 && savedDisplayIndex < comboBoxMonitor.Items.Count)
+                comboBoxMonitor.SelectedIndex = savedDisplayIndex;
+            else if (comboBoxMonitor.Items.Count > 0)
+                comboBoxMonitor.SelectedIndex = 0;
 
             string savedCodec = Properties.Settings.Default.CodecSelection;
             if (comboBoxCodec.Items.Contains(savedCodec))
@@ -192,10 +289,17 @@ namespace SimpleScreenRecorder
             btnStop.Enabled = !enabled;
             btnBrowse.Enabled = enabled;
             comboBoxMic.Enabled = enabled;
+            comboBoxMonitor.Enabled = enabled;
             fpsSelect.Enabled = enabled;
             trackBarQuality.Enabled = enabled;
             cbRecordSystemAudio.Enabled = enabled;
             lblStatus.ForeColor = enabled ? System.Drawing.Color.White : System.Drawing.Color.Red;
+
+            if (startRecordingToolStripMenuItem != null)
+                startRecordingToolStripMenuItem.Enabled = enabled;
+
+            if (stopRecordingToolStripMenuItem != null)
+                stopRecordingToolStripMenuItem.Enabled = !enabled;
         }
 
         private async Task StopAndDisposeRecorderAsync()
@@ -229,9 +333,6 @@ namespace SimpleScreenRecorder
             {
                 Debug.WriteLine("Error stopping/disposing recorder: " + ex.Message);
                 _recorder?.Dispose();
-            }
-            finally
-            {
                 _recorder = null;
             }
         }
@@ -239,25 +340,55 @@ namespace SimpleScreenRecorder
 
         private void DetectMonitors()
         {
-            int monitorCount = Screen.AllScreens.Length;
-            numericUpDownMonitor.Minimum = 1;
-            numericUpDownMonitor.Maximum = Math.Max(1, monitorCount);
-            numericUpDownMonitor.Value = 1;
+            try
+            {
+                _availableDisplays = Recorder.GetDisplays().ToList();
+                comboBoxMonitor.Items.Clear();
+
+                if (_availableDisplays == null || _availableDisplays.Count == 0)
+                {
+                    MessageBox.Show("No valid recording sources (monitors) were found.",
+                        "Eroare", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    comboBoxMonitor.Enabled = false;
+                    btnStart.Enabled = false;
+                    return;
+                }
+
+                foreach (var display in _availableDisplays)
+                {
+                    comboBoxMonitor.Items.Add(display.FriendlyName);
+                }
+
+                comboBoxMonitor.SelectedIndex = 0;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error detecting monitors: " + ex.Message,
+                    "Eroare", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                comboBoxMonitor.Enabled = false;
+                btnStart.Enabled = false;
+            }
         }
 
         private RecorderOptions GetSelectedMonitorOptions()
         {
-            int selectedMonitorIndex = (int)numericUpDownMonitor.Value - 1;
-            var screens = Screen.AllScreens;
+            int selectedMonitorIndex = comboBoxMonitor.SelectedIndex;
 
-            if (selectedMonitorIndex < 0 || selectedMonitorIndex >= screens.Length)
-                throw new ArgumentOutOfRangeException(nameof(selectedMonitorIndex), "Monitor selection is out of range.");
-
-            string deviceName = $@"\\.\DISPLAY{selectedMonitorIndex + 1}";
-
-            var displaySource = new DisplayRecordingSource
+            if (_availableDisplays == null || _availableDisplays.Count == 0)
             {
-                DeviceName = deviceName
+                throw new InvalidOperationException("No valid recording sources (monitors) were found.");
+            }
+
+            if (selectedMonitorIndex < 0 || selectedMonitorIndex >= _availableDisplays.Count)
+            {
+                selectedMonitorIndex = 0;
+            }
+
+            RecordableDisplay selectedDisplay = _availableDisplays[selectedMonitorIndex];
+
+            DisplayRecordingSource displaySource = new DisplayRecordingSource
+            {
+                DeviceName = selectedDisplay.DeviceName
             };
 
             var options = new RecorderOptions
@@ -266,7 +397,6 @@ namespace SimpleScreenRecorder
                 {
                     RecordingSources = new System.Collections.Generic.List<RecordingSourceBase> { displaySource }
                 },
-
                 OutputOptions = new OutputOptions
                 {
                     RecorderMode = RecorderMode.Video
@@ -319,12 +449,27 @@ namespace SimpleScreenRecorder
             Properties.Settings.Default.FrameRate = (int)fpsSelect.Value;
             Properties.Settings.Default.SystemAudioEnabled = cbRecordSystemAudio.Checked;
             Properties.Settings.Default.MicSelectionIndex = comboBoxMic.SelectedIndex;
-            Properties.Settings.Default.DisplaySelection = (int)numericUpDownMonitor.Value;
+            Properties.Settings.Default.DisplaySelection = comboBoxMonitor.SelectedIndex;
             Properties.Settings.Default.CodecSelection = Convert.ToString(comboBoxCodec.SelectedItem);
             Properties.Settings.Default.VBREnabled = vbrCheck.Checked;
             Properties.Settings.Default.HideOnRec = hideonrecordChkBox.Checked;
 
             Properties.Settings.Default.Save();
+        }
+
+        private void ShowPath()
+        {
+            string savepath = txtPath.Text;
+
+            if (Directory.Exists(savepath))
+            {
+                Process.Start("explorer.exe", savepath);
+            }
+            else
+            {
+                MessageBox.Show("The specified recordings path does not exist.", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         #endregion
@@ -333,25 +478,38 @@ namespace SimpleScreenRecorder
 
         private void BtnBrowse_Click(object sender, EventArgs e)
         {
-            using (SaveFileDialog sfd = new SaveFileDialog())
+            using (FolderBrowserDialog fbd = new FolderBrowserDialog())
             {
-                sfd.Title = "Select Save Location";
-                sfd.Filter = "MP4 Video (*.mp4)|*.mp4";
-                sfd.FileName = GenerateFileName();
+                fbd.Description = "Select folder to save recordings";
+                fbd.SelectedPath = string.IsNullOrWhiteSpace(txtPath.Text) ? _videosFolder : txtPath.Text;
+                fbd.ShowNewFolderButton = true;
 
-                if (sfd.ShowDialog() == DialogResult.OK)
+                if (fbd.ShowDialog() == DialogResult.OK)
                 {
-                    _outputPath = sfd.FileName;
-                    txtPath.Text = Path.GetDirectoryName(_outputPath);
+                    txtPath.Text = fbd.SelectedPath;
+                    _outputPath = null;
                 }
             }
         }
 
-        private void BtnStart_Click(object sender, EventArgs e)
+        private async void BtnStart_Click(object sender, EventArgs e)
         {
+            await StartRecordingAsync(sender, e);
+        }
+
+        private async Task StartRecordingAsync(object sender, EventArgs e)
+        {
+            if (_recorder != null && _recorder.Status == RecorderStatus.Recording)
+            {
+                MessageBox.Show("Recording is already in progress.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             try
             {
                 _outputPath = ResolveOutputPath(txtPath.Text);
+                lblStatus.Text = "Status: Preparing...";
+                SetControlsEnabled(false);
 
                 var options = GetSelectedMonitorOptions();
 
@@ -400,68 +558,72 @@ namespace SimpleScreenRecorder
                     Encoder = GetVideoEncoder(selectedCodec)
                 };
 
-                _recorder = Recorder.CreateRecorder(options);
-
-                _recorder.OnRecordingFailed += (s, evt) =>
+                await Task.Run(() =>
                 {
-                    if (IsHandleCreated && !Disposing)
-                        this.Invoke((MethodInvoker)delegate
-                        {
-                            MessageBox.Show("Recording failed: " + evt.Error, "Error",
-                                MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            lblStatus.Text = "Status: Error";
-                            SetControlsEnabled(true);
-                        });
-                };
+                    _recorder = Recorder.CreateRecorder(options);
 
-                _recorder.OnRecordingComplete += (s, evt) =>
-                {
-                    if (IsHandleCreated && !Disposing)
-                        this.Invoke((MethodInvoker)delegate
-                        {
-                            try
+                    _recorder.OnRecordingFailed += (s, evt) =>
+                    {
+                        if (IsHandleCreated && !IsDisposed)
+                            this.BeginInvoke((MethodInvoker)(() =>
                             {
-                                lblStatus.Text = "Status: Saved";
+                                MessageBox.Show("Recording failed: " + evt.Error, "Error",
+                                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                lblStatus.Text = "Status: Error";
                                 SetControlsEnabled(true);
-                                _outputPath = null;
+                            }));
+                    };
 
-                                if (notifyIcon.Visible)
-                                {
-                                    notifyIcon.BalloonTipTitle = "Recording Complete";
-                                    notifyIcon.BalloonTipText = "Recording saved to:\n" + evt.FilePath;
-                                    notifyIcon.ShowBalloonTip(4000);
-                                }
-                                else
-                                {
-                                    MessageBox.Show("Recording saved:\n" + evt.FilePath,
-                                        "Finished", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                                }
-                            }
-                            catch (Exception ex2)
+                    _recorder.OnRecordingComplete += (s, evt) =>
+                    {
+                        if (IsHandleCreated && !IsDisposed)
+                            this.BeginInvoke((MethodInvoker)(() =>
                             {
-                                MessageBox.Show("Error after saving recording:\n" + ex2.Message,
-                                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            }
-                        });
-                };
+                                try
+                                {
+                                    lblStatus.Text = "Status: Saved";
+                                    SetControlsEnabled(true);
+                                    txtPath.Text = Path.GetDirectoryName(evt.FilePath) ?? _videosFolder;
+                                    _outputPath = null;
 
-                _recorder.OnStatusChanged += (s, evt) =>
-                {
-                    if (IsHandleCreated && !Disposing)
-                        this.Invoke((MethodInvoker)delegate
-                        {
-                            lblStatus.Text = "Status: " + ((RecorderStatus)evt.Status).ToString();
+                                    if (notifyIcon.Visible)
+                                    {
+                                        notifyIcon.BalloonTipTitle = "Recording Complete";
+                                        notifyIcon.BalloonTipText = "Recording saved to:\n" + evt.FilePath;
+                                        notifyIcon.ShowBalloonTip(4000);
+                                    }
+                                    else
+                                    {
+                                        MessageBox.Show("Recording saved:\n" + evt.FilePath,
+                                            "Finished", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                    }
+                                }
+                                catch (Exception ex2)
+                                {
+                                    MessageBox.Show("Error after saving recording:\n" + ex2.Message,
+                                        "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                }
+                            }));
+                    };
 
-                            if (evt.Status == RecorderStatus.Recording && hideonrecordChkBox.Checked)
+                    _recorder.OnStatusChanged += (s, evt) =>
+                    {
+                        if (IsHandleCreated && !IsDisposed)
+                            this.BeginInvoke((MethodInvoker)(() =>
                             {
-                                WindowState = FormWindowState.Minimized;
-                                MinimizeApp();
-                            }
-                        });
-                };
+                                lblStatus.Text = "Status: " + ((RecorderStatus)evt.Status).ToString();
 
-                _recorder.Record(_outputPath);
-                SetControlsEnabled(false);
+                                if (evt.Status == RecorderStatus.Recording && hideonrecordChkBox.Checked)
+                                {
+                                    WindowState = FormWindowState.Minimized;
+                                    MinimizeApp();
+                                }
+                            }));
+                    };
+
+                    _recorder.Record(_outputPath);
+                });
+
                 lblStatus.Text = "Status: Recording...";
             }
             catch (Exception ex)
@@ -526,22 +688,33 @@ namespace SimpleScreenRecorder
 
         private async void ScreenRecorder_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (_recorder != null && _recorder.Status == RecorderStatus.Recording)
+            if (e.CloseReason == CloseReason.UserClosing || e.CloseReason == CloseReason.None)
             {
-                DialogResult result = MessageBox.Show(
-                    "Recording in progress. Stop and exit?",
-                    "Confirm Exit", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
-
-                if (result == DialogResult.No)
+                if (_recorder != null && _recorder.Status == RecorderStatus.Recording)
                 {
+                    DialogResult result = MessageBox.Show(
+                        "Recording in progress. Stop and exit?",
+                        "Confirm Exit", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+                    if (result == DialogResult.No)
+                    {
+                        e.Cancel = true;
+                        return;
+                    }
+
                     e.Cancel = true;
+
+                    await StopAndDisposeRecorderAsync();
+
+                    SaveSettings();
+
+                    this.BeginInvoke((MethodInvoker)delegate { this.Close(); });
                     return;
                 }
 
-                await StopAndDisposeRecorderAsync();
+                SaveSettings();
+                e.Cancel = false;
             }
-
-            SaveSettings();
         }
 
         private void TrackBarQuality_Scroll(object sender, EventArgs e)
@@ -581,7 +754,6 @@ namespace SimpleScreenRecorder
             if (WindowState == FormWindowState.Minimized)
             {
                 notifyIcon.Visible = true;
-                ShowInTaskbar = false;
 
                 if (_recorder != null && _recorder.Status == RecorderStatus.Recording)
                 {
@@ -599,15 +771,45 @@ namespace SimpleScreenRecorder
             else
             {
                 notifyIcon.Visible = false;
-                ShowInTaskbar = true;
             }
         }
 
-        private void NotifyIcon_Click(object sender, EventArgs e)
+        private void NotifyIcon_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             WindowState = FormWindowState.Normal;
-            ShowInTaskbar = true;
             notifyIcon.Visible = false;
+        }
+
+        private void ShowCtxMenu_Click(object sender, EventArgs e)
+        {
+            WindowState = FormWindowState.Normal;
+            notifyIcon.Visible = false;
+        }
+
+        private void ExitCtxMenu_Click(object sender, EventArgs e)
+        {
+            SaveSettings();
+            Close();
+        }
+
+        private async void StartRecordingToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            await StartRecordingAsync(sender, e);
+        }
+
+        private async void StopRecordingToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            await StopRecording(sender, e);
+        }
+
+        private void ShowRecordingsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ShowPath();
+        }
+
+        private void ShowPath_Click(object sender, EventArgs e)
+        {
+            ShowPath();
         }
 
         private void Handle_Window_Drag(object sender, MouseEventArgs e)
@@ -620,5 +822,6 @@ namespace SimpleScreenRecorder
         }
 
         #endregion
+
     }
 }

@@ -43,21 +43,28 @@
             this.notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
             this.hideonrecordChkBox = new System.Windows.Forms.CheckBox();
             this.dspLbl = new System.Windows.Forms.Label();
-            this.numericUpDownMonitor = new System.Windows.Forms.NumericUpDown();
             this.savePathSection = new System.Windows.Forms.GroupBox();
+            this.showPath = new System.Windows.Forms.Button();
             this.videoOptionsSection = new System.Windows.Forms.GroupBox();
+            this.comboBoxMonitor = new System.Windows.Forms.ComboBox();
             this.cbrCheck = new System.Windows.Forms.CheckBox();
             this.vbrCheck = new System.Windows.Forms.CheckBox();
             this.comboBoxCodec = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.showCtxMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.showRecordingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.startRecordingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.stopRecordingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.exitCtxMenu = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.trackBarQuality)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.fpsSelect)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownMonitor)).BeginInit();
             this.savePathSection.SuspendLayout();
             this.videoOptionsSection.SuspendLayout();
             this.groupBox1.SuspendLayout();
+            this.contextMenuStrip.SuspendLayout();
             this.SuspendLayout();
             // 
             // btnStart
@@ -67,13 +74,13 @@
             this.btnStart.FlatAppearance.MouseDownBackColor = System.Drawing.Color.MidnightBlue;
             this.btnStart.FlatAppearance.MouseOverBackColor = System.Drawing.Color.SteelBlue;
             this.btnStart.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnStart.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnStart.Font = new System.Drawing.Font("Arial", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnStart.ForeColor = System.Drawing.Color.White;
-            this.btnStart.Location = new System.Drawing.Point(317, 327);
+            this.btnStart.Location = new System.Drawing.Point(319, 327);
             this.btnStart.Name = "btnStart";
-            this.btnStart.Size = new System.Drawing.Size(168, 36);
+            this.btnStart.Size = new System.Drawing.Size(166, 36);
             this.btnStart.TabIndex = 5;
-            this.btnStart.Text = "Start Recording";
+            this.btnStart.Text = "Start Recording (F9)";
             this.btnStart.UseVisualStyleBackColor = false;
             this.btnStart.Click += new System.EventHandler(this.BtnStart_Click);
             // 
@@ -85,13 +92,13 @@
             this.btnStop.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Maroon;
             this.btnStop.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Crimson;
             this.btnStop.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnStop.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnStop.Font = new System.Drawing.Font("Arial", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnStop.ForeColor = System.Drawing.Color.White;
             this.btnStop.Location = new System.Drawing.Point(15, 327);
             this.btnStop.Name = "btnStop";
             this.btnStop.Size = new System.Drawing.Size(170, 36);
             this.btnStop.TabIndex = 6;
-            this.btnStop.Text = "Stop Recording";
+            this.btnStop.Text = "Stop Recording (F10)";
             this.btnStop.UseVisualStyleBackColor = false;
             this.btnStop.Click += new System.EventHandler(this.BtnStop_Click);
             // 
@@ -120,7 +127,7 @@
             this.txtPath.Location = new System.Drawing.Point(10, 24);
             this.txtPath.Name = "txtPath";
             this.txtPath.ReadOnly = true;
-            this.txtPath.Size = new System.Drawing.Size(339, 21);
+            this.txtPath.Size = new System.Drawing.Size(285, 21);
             this.txtPath.TabIndex = 3;
             // 
             // btnBrowse
@@ -132,11 +139,11 @@
             this.btnBrowse.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnBrowse.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnBrowse.ForeColor = System.Drawing.Color.Black;
-            this.btnBrowse.Location = new System.Drawing.Point(357, 24);
+            this.btnBrowse.Location = new System.Drawing.Point(304, 24);
             this.btnBrowse.Name = "btnBrowse";
-            this.btnBrowse.Size = new System.Drawing.Size(102, 21);
+            this.btnBrowse.Size = new System.Drawing.Size(76, 21);
             this.btnBrowse.TabIndex = 4;
-            this.btnBrowse.Text = "Browse...";
+            this.btnBrowse.Text = "Select...";
             this.btnBrowse.UseVisualStyleBackColor = false;
             this.btnBrowse.Click += new System.EventHandler(this.BtnBrowse_Click);
             // 
@@ -282,11 +289,11 @@
             // 
             this.fpsLbl.AutoSize = true;
             this.fpsLbl.ForeColor = System.Drawing.Color.White;
-            this.fpsLbl.Location = new System.Drawing.Point(337, 60);
+            this.fpsLbl.Location = new System.Drawing.Point(359, 60);
             this.fpsLbl.Name = "fpsLbl";
-            this.fpsLbl.Size = new System.Drawing.Size(59, 14);
+            this.fpsLbl.Size = new System.Drawing.Size(29, 14);
             this.fpsLbl.TabIndex = 18;
-            this.fpsLbl.Text = "Framerate:";
+            this.fpsLbl.Text = "FPS:";
             // 
             // appverLbl
             // 
@@ -304,7 +311,7 @@
             this.notifyIcon.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon.Icon")));
             this.notifyIcon.Text = "notifyIcon";
             this.notifyIcon.Visible = true;
-            this.notifyIcon.Click += new System.EventHandler(this.NotifyIcon_Click);
+            this.notifyIcon.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.NotifyIcon_MouseDoubleClick);
             // 
             // hideonrecordChkBox
             // 
@@ -328,32 +335,9 @@
             this.dspLbl.TabIndex = 22;
             this.dspLbl.Text = "Display:";
             // 
-            // numericUpDownMonitor
-            // 
-            this.numericUpDownMonitor.Font = new System.Drawing.Font("Arial", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.numericUpDownMonitor.Location = new System.Drawing.Point(243, 57);
-            this.numericUpDownMonitor.Maximum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.numericUpDownMonitor.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.numericUpDownMonitor.Name = "numericUpDownMonitor";
-            this.numericUpDownMonitor.Size = new System.Drawing.Size(60, 21);
-            this.numericUpDownMonitor.TabIndex = 21;
-            this.numericUpDownMonitor.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.numericUpDownMonitor.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            // 
             // savePathSection
             // 
+            this.savePathSection.Controls.Add(this.showPath);
             this.savePathSection.Controls.Add(this.txtPath);
             this.savePathSection.Controls.Add(this.btnBrowse);
             this.savePathSection.ForeColor = System.Drawing.Color.White;
@@ -364,14 +348,31 @@
             this.savePathSection.TabStop = false;
             this.savePathSection.Text = "Save Path";
             // 
+            // showPath
+            // 
+            this.showPath.BackColor = System.Drawing.Color.Honeydew;
+            this.showPath.FlatAppearance.BorderSize = 0;
+            this.showPath.FlatAppearance.MouseDownBackColor = System.Drawing.Color.White;
+            this.showPath.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Aquamarine;
+            this.showPath.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.showPath.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.showPath.ForeColor = System.Drawing.Color.Black;
+            this.showPath.Location = new System.Drawing.Point(388, 24);
+            this.showPath.Name = "showPath";
+            this.showPath.Size = new System.Drawing.Size(71, 21);
+            this.showPath.TabIndex = 5;
+            this.showPath.Text = "Show";
+            this.showPath.UseVisualStyleBackColor = false;
+            this.showPath.Click += new System.EventHandler(this.ShowPath_Click);
+            // 
             // videoOptionsSection
             // 
+            this.videoOptionsSection.Controls.Add(this.comboBoxMonitor);
             this.videoOptionsSection.Controls.Add(this.cbrCheck);
             this.videoOptionsSection.Controls.Add(this.vbrCheck);
             this.videoOptionsSection.Controls.Add(this.comboBoxCodec);
             this.videoOptionsSection.Controls.Add(this.label2);
             this.videoOptionsSection.Controls.Add(this.trackBarQuality);
-            this.videoOptionsSection.Controls.Add(this.numericUpDownMonitor);
             this.videoOptionsSection.Controls.Add(this.dspLbl);
             this.videoOptionsSection.Controls.Add(this.fpsLbl);
             this.videoOptionsSection.Controls.Add(this.fpsSelect);
@@ -383,6 +384,15 @@
             this.videoOptionsSection.TabIndex = 24;
             this.videoOptionsSection.TabStop = false;
             this.videoOptionsSection.Text = "Video Options";
+            // 
+            // comboBoxMonitor
+            // 
+            this.comboBoxMonitor.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxMonitor.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.comboBoxMonitor.Location = new System.Drawing.Point(243, 56);
+            this.comboBoxMonitor.Name = "comboBoxMonitor";
+            this.comboBoxMonitor.Size = new System.Drawing.Size(106, 22);
+            this.comboBoxMonitor.TabIndex = 27;
             // 
             // cbrCheck
             // 
@@ -446,6 +456,53 @@
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Audio Options";
             // 
+            // contextMenuStrip
+            // 
+            this.contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.showCtxMenu,
+            this.showRecordingsToolStripMenuItem,
+            this.startRecordingToolStripMenuItem,
+            this.stopRecordingToolStripMenuItem,
+            this.exitCtxMenu});
+            this.contextMenuStrip.Name = "contextMenuStrip1";
+            this.contextMenuStrip.Size = new System.Drawing.Size(202, 114);
+            // 
+            // showCtxMenu
+            // 
+            this.showCtxMenu.Name = "showCtxMenu";
+            this.showCtxMenu.Size = new System.Drawing.Size(201, 22);
+            this.showCtxMenu.Text = "Show";
+            this.showCtxMenu.Click += new System.EventHandler(this.ShowCtxMenu_Click);
+            // 
+            // showRecordingsToolStripMenuItem
+            // 
+            this.showRecordingsToolStripMenuItem.Name = "showRecordingsToolStripMenuItem";
+            this.showRecordingsToolStripMenuItem.Size = new System.Drawing.Size(201, 22);
+            this.showRecordingsToolStripMenuItem.Text = "Open Recordings Folder";
+            this.showRecordingsToolStripMenuItem.Click += new System.EventHandler(this.ShowRecordingsToolStripMenuItem_Click);
+            // 
+            // startRecordingToolStripMenuItem
+            // 
+            this.startRecordingToolStripMenuItem.Name = "startRecordingToolStripMenuItem";
+            this.startRecordingToolStripMenuItem.Size = new System.Drawing.Size(201, 22);
+            this.startRecordingToolStripMenuItem.Text = "Start Recording";
+            this.startRecordingToolStripMenuItem.Click += new System.EventHandler(this.StartRecordingToolStripMenuItem_Click);
+            // 
+            // stopRecordingToolStripMenuItem
+            // 
+            this.stopRecordingToolStripMenuItem.Enabled = false;
+            this.stopRecordingToolStripMenuItem.Name = "stopRecordingToolStripMenuItem";
+            this.stopRecordingToolStripMenuItem.Size = new System.Drawing.Size(201, 22);
+            this.stopRecordingToolStripMenuItem.Text = "Stop Recording";
+            this.stopRecordingToolStripMenuItem.Click += new System.EventHandler(this.StopRecordingToolStripMenuItem_Click);
+            // 
+            // exitCtxMenu
+            // 
+            this.exitCtxMenu.Name = "exitCtxMenu";
+            this.exitCtxMenu.Size = new System.Drawing.Size(201, 22);
+            this.exitCtxMenu.Text = "Exit";
+            this.exitCtxMenu.Click += new System.EventHandler(this.ExitCtxMenu_Click);
+            // 
             // ScreenRecorder
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
@@ -470,6 +527,7 @@
             this.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.KeyPreview = true;
             this.MaximizeBox = false;
             this.Name = "ScreenRecorder";
             this.Padding = new System.Windows.Forms.Padding(5);
@@ -480,13 +538,13 @@
             ((System.ComponentModel.ISupportInitialize)(this.trackBarQuality)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.fpsSelect)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownMonitor)).EndInit();
             this.savePathSection.ResumeLayout(false);
             this.savePathSection.PerformLayout();
             this.videoOptionsSection.ResumeLayout(false);
             this.videoOptionsSection.PerformLayout();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
+            this.contextMenuStrip.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -506,7 +564,6 @@
         private System.Windows.Forms.NotifyIcon notifyIcon;
         private System.Windows.Forms.CheckBox hideonrecordChkBox;
         private System.Windows.Forms.Label dspLbl;
-        private System.Windows.Forms.NumericUpDown numericUpDownMonitor;
         private System.Windows.Forms.GroupBox savePathSection;
         private System.Windows.Forms.GroupBox videoOptionsSection;
         private System.Windows.Forms.ComboBox comboBoxCodec;
@@ -514,5 +571,13 @@
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.CheckBox vbrCheck;
         private System.Windows.Forms.CheckBox cbrCheck;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStrip;
+        private System.Windows.Forms.ToolStripMenuItem showCtxMenu;
+        private System.Windows.Forms.ToolStripMenuItem exitCtxMenu;
+        private System.Windows.Forms.ToolStripMenuItem startRecordingToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem stopRecordingToolStripMenuItem;
+        private System.Windows.Forms.ComboBox comboBoxMonitor;
+        private System.Windows.Forms.ToolStripMenuItem showRecordingsToolStripMenuItem;
+        private System.Windows.Forms.Button showPath;
     }
 }
