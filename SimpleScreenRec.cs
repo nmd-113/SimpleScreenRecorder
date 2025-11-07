@@ -354,9 +354,10 @@ namespace SimpleScreenRecorder
                     return;
                 }
 
-                foreach (var display in _availableDisplays)
+                foreach (var display in _availableDisplays.Select((d, i) => new { Display = d, Index = i + 1 }))
                 {
-                    comboBoxMonitor.Items.Add(display.FriendlyName);
+                    string uniqueName = $"{display.Index}. {display.Display.FriendlyName}";
+                    comboBoxMonitor.Items.Add(uniqueName);
                 }
 
                 comboBoxMonitor.SelectedIndex = 0;
