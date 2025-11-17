@@ -51,7 +51,7 @@
             this.vbrCheck = new System.Windows.Forms.CheckBox();
             this.comboBoxCodec = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.audioOptionsSection = new System.Windows.Forms.GroupBox();
             this.contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.showCtxMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.showRecordingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -63,7 +63,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.fpsSelect)).BeginInit();
             this.savePathSection.SuspendLayout();
             this.videoOptionsSection.SuspendLayout();
-            this.groupBox1.SuspendLayout();
+            this.audioOptionsSection.SuspendLayout();
             this.contextMenuStrip.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -309,7 +309,7 @@
             // notifyIcon
             // 
             this.notifyIcon.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon.Icon")));
-            this.notifyIcon.Text = "notifyIcon";
+            this.notifyIcon.Text = "Simple Screen Recorder";
             this.notifyIcon.Visible = true;
             this.notifyIcon.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.NotifyIcon_MouseDoubleClick);
             // 
@@ -445,16 +445,16 @@
             this.label2.TabIndex = 23;
             this.label2.Text = "Codec:";
             // 
-            // groupBox1
+            // audioOptionsSection
             // 
-            this.groupBox1.Controls.Add(this.cbRecordSystemAudio);
-            this.groupBox1.ForeColor = System.Drawing.Color.White;
-            this.groupBox1.Location = new System.Drawing.Point(15, 70);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(470, 64);
-            this.groupBox1.TabIndex = 24;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Audio Options";
+            this.audioOptionsSection.Controls.Add(this.cbRecordSystemAudio);
+            this.audioOptionsSection.ForeColor = System.Drawing.Color.White;
+            this.audioOptionsSection.Location = new System.Drawing.Point(15, 70);
+            this.audioOptionsSection.Name = "audioOptionsSection";
+            this.audioOptionsSection.Size = new System.Drawing.Size(470, 64);
+            this.audioOptionsSection.TabIndex = 24;
+            this.audioOptionsSection.TabStop = false;
+            this.audioOptionsSection.Text = "Audio Options";
             // 
             // contextMenuStrip
             // 
@@ -523,7 +523,7 @@
             this.Controls.Add(this.btnStop);
             this.Controls.Add(this.lblStatus);
             this.Controls.Add(this.comboBoxMic);
-            this.Controls.Add(this.groupBox1);
+            this.Controls.Add(this.audioOptionsSection);
             this.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -542,8 +542,8 @@
             this.savePathSection.PerformLayout();
             this.videoOptionsSection.ResumeLayout(false);
             this.videoOptionsSection.PerformLayout();
-            this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
+            this.audioOptionsSection.ResumeLayout(false);
+            this.audioOptionsSection.PerformLayout();
             this.contextMenuStrip.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -568,7 +568,7 @@
         private System.Windows.Forms.GroupBox videoOptionsSection;
         private System.Windows.Forms.ComboBox comboBoxCodec;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.GroupBox audioOptionsSection;
         private System.Windows.Forms.CheckBox vbrCheck;
         private System.Windows.Forms.CheckBox cbrCheck;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip;

@@ -60,13 +60,7 @@ namespace SimpleScreenRecorder
             Assembly executingAssembly = Assembly.GetExecutingAssembly();
 
             string actualResourceName = executingAssembly.GetManifestResourceNames()
-                .FirstOrDefault(name => name.EndsWith(resourceName.Split('.').Last(), StringComparison.OrdinalIgnoreCase));
-
-            if (actualResourceName == null)
-            {
-                throw new FileNotFoundException($"Resursa încorporată '{resourceName}' nu a putut fi găsită în asamblare.");
-            }
-
+                .FirstOrDefault(name => name.EndsWith(resourceName.Split('.').Last(), StringComparison.OrdinalIgnoreCase)) ?? throw new FileNotFoundException($"Resursa încorporată '{resourceName}' nu a putut fi găsită în asamblare.");
             using (Stream stream = executingAssembly.GetManifestResourceStream(actualResourceName))
             using (FileStream fileStream = new FileStream(targetPath, FileMode.Create, FileAccess.Write))
             {

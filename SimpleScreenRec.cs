@@ -2,11 +2,14 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Runtime.InteropServices;
+using Timer = System.Windows.Forms.Timer;
 
 namespace SimpleScreenRecorder
 {
@@ -80,7 +83,7 @@ namespace SimpleScreenRecorder
         #region Hotkey Management
 
         private const uint MOD_NOREPEAT = 0x4000;
-        private Dictionary<int, bool> _hotkeyCooldown = new Dictionary<int, bool>();
+        private readonly Dictionary<int, bool> _hotkeyCooldown = new Dictionary<int, bool>();
 
         protected override void OnHandleCreated(EventArgs e)
         {
@@ -214,7 +217,7 @@ namespace SimpleScreenRecorder
             trackBarQuality.Value = Properties.Settings.Default.VideoQuality;
             fpsSelect.Value = Properties.Settings.Default.FrameRate;
             TrackBarQuality_Scroll(null, null);
-            
+
             if (Properties.Settings.Default.VBREnabled)
             {
                 vbrCheck.Checked = true;
@@ -570,6 +573,7 @@ namespace SimpleScreenRecorder
                             {
                                 MessageBox.Show("Recording failed: " + evt.Error, "Error",
                                     MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                FlashLabel(lblStatus, false);
                                 lblStatus.Text = "Status: Error";
                                 SetControlsEnabled(true);
                             }));
@@ -582,6 +586,7 @@ namespace SimpleScreenRecorder
                             {
                                 try
                                 {
+                                    FlashLabel(lblStatus, false);
                                     lblStatus.Text = "Status: Saved";
                                     SetControlsEnabled(true);
                                     txtPath.Text = Path.GetDirectoryName(evt.FilePath) ?? _videosFolder;
@@ -591,7 +596,17 @@ namespace SimpleScreenRecorder
                                     {
                                         notifyIcon.BalloonTipTitle = "Recording Complete";
                                         notifyIcon.BalloonTipText = "Recording saved to:\n" + evt.FilePath;
-                                        notifyIcon.ShowBalloonTip(4000);
+                                        notifyIcon.ShowBalloonTip(6000);
+
+                                        bool balloonActive = true;
+                                        notifyIcon.BalloonTipClicked += delegate
+                                        {
+                                            if (balloonActive)
+                                            {
+                                                ShowPath();
+                                                balloonActive = false;
+                                            }
+                                        };
                                     }
                                     else
                                     {
@@ -626,6 +641,7 @@ namespace SimpleScreenRecorder
                 });
 
                 lblStatus.Text = "Status: Recording...";
+                FlashLabel(lblStatus, true);
             }
             catch (Exception ex)
             {
@@ -687,35 +703,42 @@ namespace SimpleScreenRecorder
             cbrCheck.Checked = !vbrCheck.Checked;
         }
 
-        private async void ScreenRecorder_FormClosing(object sender, FormClosingEventArgs e)
+        private void ScreenRecorder_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (e.CloseReason == CloseReason.UserClosing || e.CloseReason == CloseReason.None)
+            SaveSettings();
+
+            if (_recorder != null && _recorder.Status == RecorderStatus.Recording)
             {
-                if (_recorder != null && _recorder.Status == RecorderStatus.Recording)
+                var result = MessageBox.Show(
+                    "Recording in progress. Stop and exit?",
+                    "Confirm Exit",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Warning
+                );
+
+                if (result == DialogResult.No)
                 {
-                    DialogResult result = MessageBox.Show(
-                        "Recording in progress. Stop and exit?",
-                        "Confirm Exit", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
-
-                    if (result == DialogResult.No)
-                    {
-                        e.Cancel = true;
-                        return;
-                    }
-
                     e.Cancel = true;
-
-                    await StopAndDisposeRecorderAsync();
-
-                    SaveSettings();
-
-                    this.BeginInvoke((MethodInvoker)delegate { this.Close(); });
                     return;
                 }
 
-                SaveSettings();
-                e.Cancel = false;
+                try
+                {
+                    if (_recorder.Status == RecorderStatus.Recording)
+                    {
+                        _recorder.Stop();
+                    }
+                    _recorder.Dispose();
+                    _recorder = null;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error stopping recorder: " + ex.Message,
+                                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
+
+            e.Cancel = false;
         }
 
         private void TrackBarQuality_Scroll(object sender, EventArgs e)
@@ -766,12 +789,49 @@ namespace SimpleScreenRecorder
                     notifyIcon.BalloonTipTitle = "Info";
                     notifyIcon.BalloonTipText = "Application minimized to tray.";
                 }
-
                 notifyIcon.ShowBalloonTip(3000);
             }
             else
             {
                 notifyIcon.Visible = false;
+            }
+        }
+
+        public void FlashLabel(Label lbl, bool enable, int interval = 500)
+        {
+            if (enable)
+            {
+                var cts = new CancellationTokenSource();
+
+                lbl.Tag = cts;
+
+                _ = Task.Run(async () =>
+                {
+                    bool on = false;
+                    while (!cts.Token.IsCancellationRequested)
+                    {
+                        lbl.Invoke((Action)(() =>
+                        {
+                            lbl.ForeColor = on ? Color.Red : Color.White;
+                        }));
+                        on = !on;
+                        await Task.Delay(interval, cts.Token);
+                    }
+
+                    lbl.Invoke((Action)(() =>
+                    {
+                        lbl.ForeColor = Color.White;
+                    }));
+                });
+            }
+            else
+            {
+                if (lbl.Tag is CancellationTokenSource cts)
+                {
+                    cts.Cancel();
+                    lbl.ForeColor = Color.White;
+                    lbl.Tag = null;
+                }
             }
         }
 
