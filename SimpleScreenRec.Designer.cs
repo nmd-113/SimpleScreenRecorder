@@ -524,6 +524,7 @@
             this.Controls.Add(this.lblStatus);
             this.Controls.Add(this.comboBoxMic);
             this.Controls.Add(this.audioOptionsSection);
+            this.DoubleBuffered = true;
             this.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
