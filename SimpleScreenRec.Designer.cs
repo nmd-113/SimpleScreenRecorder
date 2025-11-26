@@ -105,7 +105,7 @@
             // comboBoxMic
             // 
             this.comboBoxMic.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBoxMic.Location = new System.Drawing.Point(94, 93);
+            this.comboBoxMic.Location = new System.Drawing.Point(78, 24);
             this.comboBoxMic.Name = "comboBoxMic";
             this.comboBoxMic.Size = new System.Drawing.Size(270, 22);
             this.comboBoxMic.TabIndex = 1;
@@ -114,7 +114,7 @@
             // 
             this.labelMic.AutoSize = true;
             this.labelMic.ForeColor = System.Drawing.Color.White;
-            this.labelMic.Location = new System.Drawing.Point(22, 97);
+            this.labelMic.Location = new System.Drawing.Point(10, 28);
             this.labelMic.Name = "labelMic";
             this.labelMic.Size = new System.Drawing.Size(66, 14);
             this.labelMic.TabIndex = 0;
@@ -188,6 +188,7 @@
             this.exitBtn.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Firebrick;
             this.exitBtn.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
             this.exitBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.exitBtn.Font = new System.Drawing.Font("Arial", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.exitBtn.ForeColor = System.Drawing.Color.White;
             this.exitBtn.Location = new System.Drawing.Point(426, 15);
             this.exitBtn.Name = "exitBtn";
@@ -204,7 +205,7 @@
             this.hideBtn.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Green;
             this.hideBtn.FlatAppearance.MouseOverBackColor = System.Drawing.Color.MediumSeaGreen;
             this.hideBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.hideBtn.Font = new System.Drawing.Font("Arial Narrow", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.hideBtn.Font = new System.Drawing.Font("Arial", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.hideBtn.ForeColor = System.Drawing.Color.White;
             this.hideBtn.Location = new System.Drawing.Point(361, 15);
             this.hideBtn.Name = "hideBtn";
@@ -228,11 +229,11 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("Arial Narrow", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label1.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label1.ForeColor = System.Drawing.Color.White;
-            this.label1.Location = new System.Drawing.Point(170, 16);
+            this.label1.Location = new System.Drawing.Point(160, 17);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(160, 20);
+            this.label1.Size = new System.Drawing.Size(180, 18);
             this.label1.TabIndex = 15;
             this.label1.Text = "Simple Screen Recorder";
             this.label1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Handle_Window_Drag);
@@ -448,6 +449,8 @@
             // audioOptionsSection
             // 
             this.audioOptionsSection.Controls.Add(this.cbRecordSystemAudio);
+            this.audioOptionsSection.Controls.Add(this.labelMic);
+            this.audioOptionsSection.Controls.Add(this.comboBoxMic);
             this.audioOptionsSection.ForeColor = System.Drawing.Color.White;
             this.audioOptionsSection.Location = new System.Drawing.Point(15, 70);
             this.audioOptionsSection.Name = "audioOptionsSection";
@@ -518,11 +521,9 @@
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.hideBtn);
             this.Controls.Add(this.exitBtn);
-            this.Controls.Add(this.labelMic);
             this.Controls.Add(this.btnStart);
             this.Controls.Add(this.btnStop);
             this.Controls.Add(this.lblStatus);
-            this.Controls.Add(this.comboBoxMic);
             this.Controls.Add(this.audioOptionsSection);
             this.DoubleBuffered = true;
             this.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
