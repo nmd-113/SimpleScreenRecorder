@@ -333,7 +333,6 @@
             this.appverLbl.Name = "appverLbl";
             this.appverLbl.Size = new System.Drawing.Size(172, 13);
             this.appverLbl.TabIndex = 19;
-            this.appverLbl.Text = "dadsddasddas";
             this.appverLbl.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.appverLbl.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Handle_Window_Drag);
             // 
