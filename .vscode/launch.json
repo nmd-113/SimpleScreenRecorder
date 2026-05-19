@@ -1,0 +1,15 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch SimpleScreenRecorder (F5)",
+      "type": "clr",
+      "request": "launch",
+      "preLaunchTask": "build-simple-screen-recorder",
+      "program": "${workspaceFolder}\\bin\\Debug\\SimpleScreenRecorder.exe",
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "console": "internalConsole"
+    }
+  ]
+}

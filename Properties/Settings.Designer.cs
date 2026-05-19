@@ -37,7 +37,7 @@ namespace SimpleScreenRecorder.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("3")]
+        [global::System.Configuration.DefaultSettingValueAttribute("6")]
         public int VideoQuality {
             get {
                 return ((int)(this["VideoQuality"]));
@@ -97,7 +97,7 @@ namespace SimpleScreenRecorder.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        [global::System.Configuration.DefaultSettingValueAttribute("H.264 (AVC)")]
         public string CodecSelection {
             get {
                 return ((string)(this["CodecSelection"]));
@@ -128,6 +128,78 @@ namespace SimpleScreenRecorder.Properties {
             }
             set {
                 this["HideOnRec"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool CountdownEnabled {
+            get {
+                return ((bool)(this["CountdownEnabled"]));
+            }
+            set {
+                this["CountdownEnabled"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool SelectedAreaEnabled {
+            get {
+                return ((bool)(this["SelectedAreaEnabled"]));
+            }
+            set {
+                this["SelectedAreaEnabled"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int SelectedAreaX {
+            get {
+                return ((int)(this["SelectedAreaX"]));
+            }
+            set {
+                this["SelectedAreaX"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int SelectedAreaY {
+            get {
+                return ((int)(this["SelectedAreaY"]));
+            }
+            set {
+                this["SelectedAreaY"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int SelectedAreaWidth {
+            get {
+                return ((int)(this["SelectedAreaWidth"]));
+            }
+            set {
+                this["SelectedAreaWidth"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int SelectedAreaHeight {
+            get {
+                return ((int)(this["SelectedAreaHeight"]));
+            }
+            set {
+                this["SelectedAreaHeight"] = value;
             }
         }
     }

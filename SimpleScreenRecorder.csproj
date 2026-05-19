@@ -74,26 +74,62 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <!-- Main forms and partials -->
     <Compile Include="SimpleScreenRec.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormParts\SimpleScreenRec.Helpers.cs">
+      <DependentUpon>..\SimpleScreenRec.cs</DependentUpon>
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormParts\SimpleScreenRec.Hotkeys.cs">
+      <DependentUpon>..\SimpleScreenRec.cs</DependentUpon>
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormParts\SimpleScreenRec.Recording.cs">
+      <DependentUpon>..\SimpleScreenRec.cs</DependentUpon>
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormParts\SimpleScreenRec.Settings.cs">
+      <DependentUpon>..\SimpleScreenRec.cs</DependentUpon>
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormParts\SimpleScreenRec.Tray.cs">
+      <DependentUpon>..\SimpleScreenRec.cs</DependentUpon>
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="SimpleScreenRec.Designer.cs">
       <DependentUpon>SimpleScreenRec.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </Compile>
+    <Compile Include="RegionSelectorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="RegionSelectorForm.Designer.cs">
+      <DependentUpon>RegionSelectorForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </Compile>
+    <!-- App entry point and assembly metadata -->
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <!-- Form resources -->
     <EmbeddedResource Include="SimpleScreenRec.resx">
       <DependentUpon>SimpleScreenRec.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="RegionSelectorForm.resx">
+      <DependentUpon>RegionSelectorForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <!-- Generated resource/settings code -->
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
+      <SubType>Designer</SubType>
     </Compile>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -103,6 +139,7 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <SubType>Designer</SubType>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -111,6 +148,7 @@
   <ItemGroup>
     <None Include="Resources\icon_naetech_small.png" />
     <EmbeddedResource Include="Resources\ScreenRecorderLib.dll" />
+    <None Include="Resources\border.png" />
     <Content Include="screenrec.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -1,0 +1,25 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build-simple-screen-recorder",
+      "type": "process",
+      "command": "powershell.exe",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-Command",
+        "$ErrorActionPreference='Stop'; $msbuild=''; $pf=[Environment]::GetFolderPath('ProgramFiles'); $pf86=[Environment]::GetFolderPath('ProgramFilesX86'); $vswhere=Join-Path $pf86 'Microsoft Visual Studio\\Installer\\vswhere.exe'; if (Test-Path $vswhere) { $msbuild=& $vswhere -latest -requires Microsoft.Component.MSBuild -find 'MSBuild\\**\\Bin\\MSBuild.exe' | Select-Object -First 1 }; if (-not $msbuild) { $fallback=@( (Join-Path $pf 'Microsoft Visual Studio\\2022\\Enterprise\\MSBuild\\Current\\Bin\\MSBuild.exe'), (Join-Path $pf 'Microsoft Visual Studio\\2022\\Professional\\MSBuild\\Current\\Bin\\MSBuild.exe'), (Join-Path $pf 'Microsoft Visual Studio\\2022\\Community\\MSBuild\\Current\\Bin\\MSBuild.exe'), (Join-Path $pf86 'Microsoft Visual Studio\\2019\\BuildTools\\MSBuild\\Current\\Bin\\MSBuild.exe') ); $msbuild=$fallback | Where-Object { Test-Path $_ } | Select-Object -First 1 }; if (-not $msbuild) { throw 'MSBuild.exe not found. Install Visual Studio or Build Tools.' }; & $msbuild 'SimpleScreenRecorder.sln' /t:Build /m /nologo /p:Configuration=Debug /p:Platform='Any CPU'"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": "$msCompile",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    }
+  ]
+}
