@@ -18,9 +18,16 @@ namespace SimpleScreenRecorder
         private bool _isCountdownActive;
         private Task _currentStopTask = Task.CompletedTask;
         private readonly object _stopSync = new object();
+        private readonly object _recordingActionCooldownSync = new object();
         private DateTime _recordingStartTime;
+        private DateTime? _recordingPausedAt;
+        private DateTime _nextStartAllowedUtc = DateTime.MinValue;
+        private DateTime _nextStopAllowedUtc = DateTime.MinValue;
+        private Timer _cooldownStatusRestoreTimer;
+        private string _pendingCooldownStatusMessage;
         private const int MinRegionWidth = 100;
         private const int MinRegionHeight = 100;
+        private static readonly TimeSpan RecordingActionCooldown = TimeSpan.FromSeconds(3);
 
         #endregion
 
@@ -28,6 +35,34 @@ namespace SimpleScreenRecorder
 
         private async void BtnStart_Click(object sender, EventArgs e)
         {
+            await HandlePrimaryRecordingActionAsync(sender, e);
+        }
+
+        private async Task HandlePrimaryRecordingActionAsync(object sender, EventArgs e)
+        {
+            if (_isStoppingRecording)
+                return;
+            if (_isCountdownActive)
+                return;
+
+            if (_recorder != null)
+            {
+                if (_recorder.Status == RecorderStatus.Recording)
+                {
+                    await PauseRecordingAsync();
+                    return;
+                }
+
+                if (_recorder.Status == RecorderStatus.Paused)
+                {
+                    ResumeRecording();
+                    return;
+                }
+
+                ShowTemporaryCooldownStatus("Status: Please wait...");
+                return;
+            }
+
             await StartRecordingAsync(sender, e);
         }
 
@@ -38,9 +73,22 @@ namespace SimpleScreenRecorder
             if (_isCountdownActive)
                 return;
 
-            if (_recorder != null && _recorder.Status == RecorderStatus.Recording)
+            if (_recorder != null)
             {
-                MessageBox.Show("Recording is already in progress.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                if (_recorder.Status == RecorderStatus.Recording)
+                {
+                    MessageBox.Show("Recording is already in progress.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+                else
+                {
+                    ShowTemporaryCooldownStatus("Status: Please wait...");
+                }
+                return;
+            }
+
+            if (!CanStartRecordingNow())
+            {
+                ShowTemporaryCooldownStatus("Status: Please wait before starting again...");
                 return;
             }
 
@@ -140,18 +188,18 @@ namespace SimpleScreenRecorder
                 });
 
                 _recordingStartTime = DateTime.Now;
+                _recordingPausedAt = null;
                 lblRecordingTimer.Text = "00:00:00";
                 recordingTimer.Start();
-                if (_selectedRecordingRegion.HasValue)
-                    lblStatus.Text = "Status: Recording selected area...";
-                else
-                    lblStatus.Text = "Status: Recording...";
-                FlashLabel(lblStatus, true);
+                SetNextStopAllowedUtc(DateTime.UtcNow.Add(RecordingActionCooldown));
+                ApplyRecordingUi();
             }
             catch (Exception ex)
             {
                 _isCountdownActive = false;
                 StopAndResetRecordingTimer();
+                _recordingPausedAt = null;
+                StopTrayRecordingIndicator();
                 if (_recorder != null)
                 {
                     UnsubscribeRecorderEvents(_recorder);
@@ -186,6 +234,12 @@ namespace SimpleScreenRecorder
                     return;
                 }
 
+                if (!CanStopRecordingNow())
+                {
+                    ShowTemporaryCooldownStatus("Status: Please wait before stopping...");
+                    return;
+                }
+
                 await StopAndDisposeRecorderAsync();
                 if (!_isClosingAfterRecordingStop)
                 {
@@ -199,9 +253,16 @@ namespace SimpleScreenRecorder
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
                 if (_recorder != null)
                 {
+                    UnsubscribeRecorderEvents(_recorder);
                     _recorder.Dispose();
                     _recorder = null;
                 }
+                _outputPath = null;
+                _recordingPausedAt = null;
+                StopAndResetRecordingTimer();
+                StopTrayRecordingIndicator();
+                FlashLabel(lblStatus, false);
+                SetNextStartAllowedUtc(DateTime.UtcNow.Add(RecordingActionCooldown));
                 SetControlsEnabled(true);
             }
         }
@@ -209,6 +270,175 @@ namespace SimpleScreenRecorder
         private async void BtnStop_Click(object sender, EventArgs e)
         {
             await StopRecording(sender, e);
+        }
+
+        private async Task PauseRecordingAsync()
+        {
+            Recorder recorder = _recorder;
+            if (recorder == null || recorder.Status != RecorderStatus.Recording)
+                return;
+
+            try
+            {
+                await Task.Run(() => recorder.Pause());
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error pausing recording:\n" + ex.Message,
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void ResumeRecording()
+        {
+            Recorder recorder = _recorder;
+            if (recorder == null || recorder.Status != RecorderStatus.Paused)
+                return;
+
+            try
+            {
+                recorder.Resume();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error resuming recording:\n" + ex.Message,
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private bool CanStartRecordingNow()
+        {
+            lock (_recordingActionCooldownSync)
+            {
+                return DateTime.UtcNow >= _nextStartAllowedUtc;
+            }
+        }
+
+        private bool CanStopRecordingNow()
+        {
+            lock (_recordingActionCooldownSync)
+            {
+                return DateTime.UtcNow >= _nextStopAllowedUtc;
+            }
+        }
+
+        private void SetNextStartAllowedUtc(DateTime nextAllowedUtc)
+        {
+            lock (_recordingActionCooldownSync)
+            {
+                _nextStartAllowedUtc = nextAllowedUtc;
+            }
+        }
+
+        private void SetNextStopAllowedUtc(DateTime nextAllowedUtc)
+        {
+            lock (_recordingActionCooldownSync)
+            {
+                _nextStopAllowedUtc = nextAllowedUtc;
+            }
+        }
+
+        private void ShowTemporaryCooldownStatus(string message)
+        {
+            if (IsDisposed || Disposing || !IsHandleCreated)
+                return;
+
+            EnsureCooldownStatusRestoreTimer();
+
+            _pendingCooldownStatusMessage = message;
+            lblStatus.Text = message;
+
+            if (_cooldownStatusRestoreTimer == null)
+                return;
+
+            _cooldownStatusRestoreTimer.Stop();
+            _cooldownStatusRestoreTimer.Interval = (int)RecordingActionCooldown.TotalMilliseconds;
+            _cooldownStatusRestoreTimer.Start();
+        }
+
+        private void RestoreRecordingStatusText()
+        {
+            if (_isCountdownActive)
+                return;
+
+            if (_isStoppingRecording)
+            {
+                lblStatus.Text = "Status: Stopping...";
+                return;
+            }
+
+            if (_recorder != null && _recorder.Status == RecorderStatus.Paused)
+            {
+                lblStatus.Text = "Status: Paused";
+                return;
+            }
+
+            if (_recorder != null && _recorder.Status == RecorderStatus.Recording)
+            {
+                lblStatus.Text = _selectedRecordingRegion.HasValue
+                    ? "Status: Recording selected area..."
+                    : "Status: Recording...";
+                return;
+            }
+
+            lblStatus.Text = btnStop.Enabled ? "Status: Stopped" : "Status: Idle";
+        }
+
+        private void EnsureCooldownStatusRestoreTimer()
+        {
+            if (_cooldownStatusRestoreTimer != null || components == null)
+                return;
+
+            _cooldownStatusRestoreTimer = new Timer(components);
+            _cooldownStatusRestoreTimer.Tick += CooldownStatusRestoreTimer_Tick;
+        }
+
+        private void CooldownStatusRestoreTimer_Tick(object sender, EventArgs e)
+        {
+            if (_cooldownStatusRestoreTimer != null)
+                _cooldownStatusRestoreTimer.Stop();
+
+            if (IsDisposed || Disposing || !IsHandleCreated)
+                return;
+
+            string pendingMessage = _pendingCooldownStatusMessage;
+            _pendingCooldownStatusMessage = null;
+
+            if (!string.IsNullOrEmpty(pendingMessage) && lblStatus.Text == pendingMessage)
+                RestoreRecordingStatusText();
+        }
+
+        private void ApplyRecordingUi()
+        {
+            if (_recordingPausedAt.HasValue)
+            {
+                _recordingStartTime = _recordingStartTime.Add(DateTime.Now - _recordingPausedAt.Value);
+                _recordingPausedAt = null;
+            }
+
+            if (recordingTimer != null && !recordingTimer.Enabled)
+                recordingTimer.Start();
+
+            StartTrayRecordingIndicator();
+            SetControlsEnabled(false);
+            lblStatus.Text = _selectedRecordingRegion.HasValue
+                ? "Status: Recording selected area..."
+                : "Status: Recording...";
+            FlashLabel(lblStatus, true);
+        }
+
+        private void ApplyPausedUi()
+        {
+            if (!_recordingPausedAt.HasValue)
+                _recordingPausedAt = DateTime.Now;
+
+            if (recordingTimer != null)
+                recordingTimer.Stop();
+
+            ShowPausedTrayIndicator();
+            SetControlsEnabled(false);
+            lblStatus.Text = "Status: Paused";
+            FlashLabel(lblStatus, false);
         }
 
         #endregion
@@ -240,6 +470,8 @@ namespace SimpleScreenRecorder
                     MessageBox.Show("Recording failed: " + evt.Error, "Error",
                         MessageBoxButtons.OK, MessageBoxIcon.Error);
                     FlashLabel(lblStatus, false);
+                    _recordingPausedAt = null;
+                    StopTrayRecordingIndicator();
                     lblStatus.Text = "Status: Error";
                     _outputPath = null;
                     SetControlsEnabled(true);
@@ -255,12 +487,15 @@ namespace SimpleScreenRecorder
                     try
                     {
                         StopAndResetRecordingTimer();
+                        _recordingPausedAt = null;
                         FlashLabel(lblStatus, false);
+                        StopTrayRecordingIndicator();
                         lblStatus.Text = "Status: Saved";
                         SetControlsEnabled(true);
                         _lastCompletedRecordingFile = evt.FilePath;
-                        txtPath.Text = Path.GetDirectoryName(evt.FilePath) ?? _videosFolder;
-                        _lastCompletedRecordingFolder = Path.GetDirectoryName(evt.FilePath) ?? _videosFolder;
+                        string recordingFolder = Path.GetDirectoryName(evt.FilePath) ?? _videosFolder;
+                        txtPath.Text = recordingFolder;
+                        _lastCompletedRecordingFolder = recordingFolder;
                         openLastRecordingToolStripMenuItem.Enabled = File.Exists(_lastCompletedRecordingFile);
                         _outputPath = null;
 
@@ -290,9 +525,24 @@ namespace SimpleScreenRecorder
             if (IsHandleCreated && !IsDisposed)
                 BeginInvoke((MethodInvoker)(() =>
                 {
-                    lblStatus.Text = "Status: " + ((RecorderStatus)evt.Status).ToString();
+                    RecorderStatus status = (RecorderStatus)evt.Status;
 
-                    if (evt.Status == RecorderStatus.Recording && hideonrecordChkBox.Checked)
+                    if (status == RecorderStatus.Paused)
+                    {
+                        ApplyPausedUi();
+                        return;
+                    }
+
+                    if (status == RecorderStatus.Recording)
+                    {
+                        ApplyRecordingUi();
+                    }
+                    else
+                    {
+                        lblStatus.Text = "Status: " + status;
+                    }
+
+                    if (status == RecorderStatus.Recording && hideonrecordChkBox.Checked)
                     {
                         WindowState = FormWindowState.Minimized;
                         MinimizeApp();
@@ -330,7 +580,7 @@ namespace SimpleScreenRecorder
 
             try
             {
-                if (recorder.Status == RecorderStatus.Recording)
+                if (recorder.Status == RecorderStatus.Recording || recorder.Status == RecorderStatus.Paused)
                 {
                     var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -376,7 +626,11 @@ namespace SimpleScreenRecorder
 
                 _recorder = null;
                 _outputPath = null;
+                _recordingPausedAt = null;
                 StopAndResetRecordingTimer();
+                StopTrayRecordingIndicator();
+                FlashLabel(lblStatus, false);
+                SetNextStartAllowedUtc(DateTime.UtcNow.Add(RecordingActionCooldown));
 
                 if (!_isClosingAfterRecordingStop && IsHandleCreated && !IsDisposed)
                 {

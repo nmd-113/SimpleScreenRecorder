@@ -18,6 +18,8 @@ namespace SimpleScreenRecorder
             bool isDesignMode = IsInDesignMode();
             if (!isDesignMode)
             {
+                InitializeTrayRecordingIndicator();
+
                 try
                 {
                     LoadAudioDevices();
@@ -61,7 +63,9 @@ namespace SimpleScreenRecorder
                 return;
             }
 
-            bool isActiveRecording = _recorder != null && _recorder.Status == ScreenRecorderLib.RecorderStatus.Recording;
+            bool isActiveRecording = _recorder != null &&
+                (_recorder.Status == ScreenRecorderLib.RecorderStatus.Recording
+                || _recorder.Status == ScreenRecorderLib.RecorderStatus.Paused);
             if (isActiveRecording || _isStoppingRecording)
             {
                 var result = MessageBox.Show(

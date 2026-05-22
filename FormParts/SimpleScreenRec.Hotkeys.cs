@@ -113,12 +113,13 @@ namespace SimpleScreenRecorder
             {
                 if (id == HOTKEY_ID_START)
                 {
-                    if (_recorder == null || _recorder.Status != ScreenRecorderLib.RecorderStatus.Recording)
-                        await StartRecordingAsync(this, EventArgs.Empty);
+                    await HandlePrimaryRecordingActionAsync(this, EventArgs.Empty);
                 }
                 else if (id == HOTKEY_ID_STOP)
                 {
-                    if (_recorder != null && _recorder.Status == ScreenRecorderLib.RecorderStatus.Recording)
+                    if (_recorder != null &&
+                        (_recorder.Status == ScreenRecorderLib.RecorderStatus.Recording
+                        || _recorder.Status == ScreenRecorderLib.RecorderStatus.Paused))
                         await StopRecording(this, EventArgs.Empty);
                 }
             }
@@ -138,6 +139,7 @@ namespace SimpleScreenRecorder
                 UnregisterHotKey(Handle, HOTKEY_ID_START);
             if (_stopHotkeyRegistered)
                 UnregisterHotKey(Handle, HOTKEY_ID_STOP);
+            CleanupTrayRecordingIndicator();
             base.OnFormClosing(e);
         }
 

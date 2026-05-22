@@ -1,4 +1,4 @@
-using ScreenRecorderLib;
+﻿using ScreenRecorderLib;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -219,7 +219,13 @@ namespace SimpleScreenRecorder
 
         private void SetControlsEnabled(bool enabled)
         {
-            btnStart.Enabled = enabled;
+            bool canUsePrimaryAction = enabled
+                || (_recorder != null
+                    && (_recorder.Status == RecorderStatus.Recording || _recorder.Status == RecorderStatus.Paused)
+                    && !_isStoppingRecording
+                    && !_isCountdownActive);
+
+            btnStart.Enabled = canUsePrimaryAction;
             btnStop.Enabled = !enabled;
             btnSelectArea.Enabled = enabled;
             btnClearArea.Enabled = enabled && _selectedRecordingRegion.HasValue;
@@ -236,10 +242,40 @@ namespace SimpleScreenRecorder
             lblStatus.ForeColor = enabled ? Color.White : Color.Red;
 
             if (startRecordingToolStripMenuItem != null)
-                startRecordingToolStripMenuItem.Enabled = enabled;
+                startRecordingToolStripMenuItem.Enabled = canUsePrimaryAction;
 
             if (stopRecordingToolStripMenuItem != null)
                 stopRecordingToolStripMenuItem.Enabled = !enabled;
+
+            UpdatePrimaryActionUi();
+        }
+
+        private void UpdatePrimaryActionUi()
+        {
+            string buttonText = "⚫ Start Recording (F9)";
+            string menuText = "⚫ Start Recording";
+            string tooltipText = "Start recording with the current settings.";
+
+            if (_recorder != null && _recorder.Status == RecorderStatus.Paused)
+            {
+                buttonText = "▶︎ Resume Recording (F9)";
+                menuText = "▶︎ Resume Recording";
+                tooltipText = "Resume the paused recording.";
+            }
+            else if (_recorder != null && _recorder.Status == RecorderStatus.Recording)
+            {
+                buttonText = "❚❚ Pause Recording (F9)";
+                menuText = "❚❚ Pause Recording";
+                tooltipText = "Pause the current recording.";
+            }
+
+            btnStart.Text = buttonText;
+
+            if (startRecordingToolStripMenuItem != null)
+                startRecordingToolStripMenuItem.Text = menuText;
+
+            if (toolTip != null)
+                toolTip.SetToolTip(btnStart, tooltipText);
         }
 
         private void ShowPath()
