@@ -109,6 +109,9 @@
       <DependentUpon>RegionSelectorForm.cs</DependentUpon>
       <SubType>Designer</SubType>
     </Compile>
+    <Compile Include="SelectedAreaOverlayForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <!-- App entry point and assembly metadata -->
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

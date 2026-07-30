@@ -52,6 +52,7 @@ namespace SimpleScreenRecorder
                 return;
 
             RegisterHotkeys();
+            UpdateSelectedAreaOverlay();
         }
 
         private void RegisterHotkeys()
@@ -86,6 +87,12 @@ namespace SimpleScreenRecorder
             if (m.Msg == WM_HOTKEY)
             {
                 int id = m.WParam.ToInt32();
+
+                if (id != HOTKEY_ID_START && id != HOTKEY_ID_STOP)
+                {
+                    base.WndProc(ref m);
+                    return;
+                }
 
                 if (_hotkeyCooldown.ContainsKey(id) && _hotkeyCooldown[id])
                     return;

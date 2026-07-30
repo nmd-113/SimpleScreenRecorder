@@ -463,20 +463,19 @@ namespace SimpleScreenRecorder
 
         private void Recorder_OnRecordingFailed(object sender, RecordingFailedEventArgs evt)
         {
-            if (IsHandleCreated && !IsDisposed)
-                BeginInvoke((MethodInvoker)(() =>
-                {
-                    StopAndResetRecordingTimer();
-                    MessageBox.Show("Recording failed: " + evt.Error, "Error",
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    FlashLabel(lblStatus, false);
-                    _recordingPausedAt = null;
-                    StopTrayRecordingIndicator();
-                    lblStatus.Text = "Status: Error";
-                    _outputPath = null;
-                    SetControlsEnabled(true);
-                    _ = StopAndDisposeRecorderAsync();
-                }));
+            TryBeginInvoke(() =>
+            {
+                StopAndResetRecordingTimer();
+                MessageBox.Show("Recording failed: " + evt.Error, "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                FlashLabel(lblStatus, false);
+                _recordingPausedAt = null;
+                StopTrayRecordingIndicator();
+                lblStatus.Text = "Status: Error";
+                _outputPath = null;
+                SetControlsEnabled(true);
+                _ = StopAndDisposeRecorderAsync();
+            });
         }
 
         private void Recorder_OnRecordingComplete(object sender, RecordingCompleteEventArgs evt)
@@ -551,32 +550,31 @@ namespace SimpleScreenRecorder
 
         private void Recorder_OnStatusChanged(object sender, RecordingStatusEventArgs evt)
         {
-            if (IsHandleCreated && !IsDisposed)
-                BeginInvoke((MethodInvoker)(() =>
+            TryBeginInvoke(() =>
+            {
+                RecorderStatus status = (RecorderStatus)evt.Status;
+
+                if (status == RecorderStatus.Paused)
                 {
-                    RecorderStatus status = (RecorderStatus)evt.Status;
+                    ApplyPausedUi();
+                    return;
+                }
 
-                    if (status == RecorderStatus.Paused)
-                    {
-                        ApplyPausedUi();
-                        return;
-                    }
+                if (status == RecorderStatus.Recording)
+                {
+                    ApplyRecordingUi();
+                }
+                else
+                {
+                    lblStatus.Text = "Status: " + status;
+                }
 
-                    if (status == RecorderStatus.Recording)
-                    {
-                        ApplyRecordingUi();
-                    }
-                    else
-                    {
-                        lblStatus.Text = "Status: " + status;
-                    }
-
-                    if (status == RecorderStatus.Recording && hideonrecordChkBox.Checked)
-                    {
-                        WindowState = FormWindowState.Minimized;
-                        MinimizeApp();
-                    }
-                }));
+                if (status == RecorderStatus.Recording && hideonrecordChkBox.Checked)
+                {
+                    WindowState = FormWindowState.Minimized;
+                    MinimizeApp();
+                }
+            });
         }
 
         private Task StopAndDisposeRecorderAsync()
@@ -918,7 +916,7 @@ namespace SimpleScreenRecorder
         {
             if (InvokeRequired)
             {
-                BeginInvoke((MethodInvoker)StopAndResetRecordingTimer);
+                TryBeginInvoke(StopAndResetRecordingTimer);
                 return;
             }
 

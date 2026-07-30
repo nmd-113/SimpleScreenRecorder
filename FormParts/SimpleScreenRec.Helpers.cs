@@ -21,6 +21,7 @@ namespace SimpleScreenRecorder
         private Dictionary<string, string> _inputDevicesMap;
         private List<RecordableDisplay> _availableDisplays;
         private Rectangle? _selectedRecordingRegion;
+        private SelectedAreaOverlayForm _selectedAreaOverlay;
 
         #endregion
 
@@ -96,9 +97,14 @@ namespace SimpleScreenRecorder
                     return;
                 }
 
+                string primaryDisplayDeviceName = Screen.PrimaryScreen?.DeviceName;
                 foreach (var display in _availableDisplays.Select((d, i) => new { Display = d, Index = i + 1 }))
                 {
-                    string uniqueName = $"{display.Index}. {display.Display.FriendlyName}";
+                    bool isPrimaryDisplay = !string.IsNullOrWhiteSpace(primaryDisplayDeviceName) &&
+                        string.Equals(display.Display.DeviceName, primaryDisplayDeviceName,
+                            StringComparison.OrdinalIgnoreCase);
+                    string uniqueName = $"{display.Index}. {display.Display.FriendlyName}" +
+                        (isPrimaryDisplay ? " *" : string.Empty);
                     comboBoxMonitor.Items.Add(uniqueName);
                 }
 
@@ -160,16 +166,24 @@ namespace SimpleScreenRecorder
 
         private int GetSelectedFrameRate()
         {
-            return comboBoxFps.SelectedIndex == 2 ? 120 : (comboBoxFps.SelectedIndex == 1 ? 60 : 30);
+            switch (comboBoxFps.SelectedIndex)
+            {
+                case 0: return 15;
+                case 2: return 60;
+                case 3: return 120;
+                default: return 30;
+            }
         }
 
         private int GetFrameRateSelectionIndex(int frameRate)
         {
             if (frameRate >= 120)
-                return 2;
+                return 3;
             if (frameRate >= 60)
-                return 1;
-            return 0;
+                return 2;
+            if (frameRate <= 15)
+                return 0;
+            return 1;
         }
 
         #endregion
@@ -189,6 +203,40 @@ namespace SimpleScreenRecorder
             {
                 areaStatusLabel.Text = "Area: Full Display";
             }
+
+            UpdateSelectedAreaOverlay();
+        }
+
+        private void UpdateSelectedAreaOverlay()
+        {
+            if (IsInDesignMode() || !IsHandleCreated)
+                return;
+
+            if (!_selectedRecordingRegion.HasValue)
+            {
+                HideSelectedAreaOverlay();
+                return;
+            }
+
+            if (_selectedAreaOverlay == null || _selectedAreaOverlay.IsDisposed)
+                _selectedAreaOverlay = new SelectedAreaOverlayForm();
+
+            _selectedAreaOverlay.ShowFor(_selectedRecordingRegion.Value);
+        }
+
+        private void HideSelectedAreaOverlay()
+        {
+            if (_selectedAreaOverlay != null && !_selectedAreaOverlay.IsDisposed)
+                _selectedAreaOverlay.Hide();
+        }
+
+        private void DisposeSelectedAreaOverlay()
+        {
+            if (_selectedAreaOverlay == null)
+                return;
+
+            _selectedAreaOverlay.Dispose();
+            _selectedAreaOverlay = null;
         }
 
         #endregion
@@ -226,6 +274,23 @@ namespace SimpleScreenRecorder
                 stopRecordingToolStripMenuItem.Enabled = !enabled;
 
             UpdatePrimaryActionUi();
+        }
+
+        private bool TryBeginInvoke(MethodInvoker callback)
+        {
+            if (callback == null || IsDisposed || Disposing || !IsHandleCreated)
+                return false;
+
+            try
+            {
+                BeginInvoke(callback);
+                return true;
+            }
+            catch (InvalidOperationException)
+            {
+                // The form handle can be destroyed between the state check and BeginInvoke.
+                return false;
+            }
         }
 
         private void UpdatePrimaryActionUi()
@@ -390,14 +455,22 @@ namespace SimpleScreenRecorder
         {
             Rectangle initialBounds = _selectedRecordingRegion ?? GetDefaultSelectionBounds();
 
-            using (var selector = new RegionSelectorForm(initialBounds))
+            HideSelectedAreaOverlay();
+            try
             {
-                if (selector.ShowDialog(this) == DialogResult.OK)
+                using (var selector = new RegionSelectorForm(initialBounds))
                 {
-                    _selectedRecordingRegion = selector.SelectedBounds;
-                    UpdateAreaSelectionUi();
-                    lblStatus.Text = $"Status: Area selected {_selectedRecordingRegion.Value.Width}x{_selectedRecordingRegion.Value.Height}";
+                    if (selector.ShowDialog(this) == DialogResult.OK)
+                    {
+                        _selectedRecordingRegion = selector.SelectedBounds;
+                        UpdateAreaSelectionUi();
+                        lblStatus.Text = $"Status: Area selected {_selectedRecordingRegion.Value.Width}x{_selectedRecordingRegion.Value.Height}";
+                    }
                 }
+            }
+            finally
+            {
+                UpdateSelectedAreaOverlay();
             }
         }
 
@@ -462,6 +535,12 @@ namespace SimpleScreenRecorder
                 ReleaseCapture();
                 SendMessage(Handle, WM_NCLBUTTONDOWN, HT_CAPTION, 0);
             }
+        }
+
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            DisposeSelectedAreaOverlay();
+            base.OnFormClosed(e);
         }
 
         #endregion

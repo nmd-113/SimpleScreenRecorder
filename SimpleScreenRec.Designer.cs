@@ -306,6 +306,7 @@
             this.comboBoxFps.ForeColor = System.Drawing.Color.Black;
             this.comboBoxFps.FormattingEnabled = true;
             this.comboBoxFps.Items.AddRange(new object[] {
+            "15 FPS - Low",
             "30 FPS - Standard",
             "60 FPS - Smooth",
             "120 FPS - Very Smooth"});
