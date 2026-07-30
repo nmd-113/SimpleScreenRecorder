@@ -176,9 +176,9 @@
             this.btnSelectArea.ForeColor = System.Drawing.Color.LightGray;
             this.btnSelectArea.Location = new System.Drawing.Point(238, 88);
             this.btnSelectArea.Name = "btnSelectArea";
-            this.btnSelectArea.Size = new System.Drawing.Size(117, 23);
+            this.btnSelectArea.Size = new System.Drawing.Size(108, 23);
             this.btnSelectArea.TabIndex = 27;
-            this.btnSelectArea.Text = "Select Area";
+            this.btnSelectArea.Text = "⛶ Custom area";
             this.btnSelectArea.UseVisualStyleBackColor = false;
             this.btnSelectArea.Click += new System.EventHandler(this.BtnSelectArea_Click);
             // 
@@ -190,11 +190,11 @@
             this.btnClearArea.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnClearArea.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnClearArea.ForeColor = System.Drawing.Color.LightGray;
-            this.btnClearArea.Location = new System.Drawing.Point(365, 88);
+            this.btnClearArea.Location = new System.Drawing.Point(352, 88);
             this.btnClearArea.Name = "btnClearArea";
-            this.btnClearArea.Size = new System.Drawing.Size(48, 23);
+            this.btnClearArea.Size = new System.Drawing.Size(61, 23);
             this.btnClearArea.TabIndex = 28;
-            this.btnClearArea.Text = "🗑";
+            this.btnClearArea.Text = "🗑 Clear";
             this.btnClearArea.UseVisualStyleBackColor = false;
             this.btnClearArea.Click += new System.EventHandler(this.BtnClearArea_Click);
             // 
@@ -270,7 +270,7 @@
             this.appName.ForeColor = System.Drawing.Color.Silver;
             this.appName.Location = new System.Drawing.Point(63, 13);
             this.appName.Name = "appName";
-            this.appName.Size = new System.Drawing.Size(176, 27);
+            this.appName.Size = new System.Drawing.Size(390, 27);
             this.appName.TabIndex = 15;
             this.appName.Text = "Simple Screen Recorder";
             this.appName.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Handle_Window_Drag);
@@ -331,7 +331,7 @@
             this.appverLbl.ForeColor = System.Drawing.Color.Gray;
             this.appverLbl.Location = new System.Drawing.Point(64, 38);
             this.appverLbl.Name = "appverLbl";
-            this.appverLbl.Size = new System.Drawing.Size(172, 13);
+            this.appverLbl.Size = new System.Drawing.Size(388, 13);
             this.appverLbl.TabIndex = 19;
             this.appverLbl.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.appverLbl.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Handle_Window_Drag);
@@ -457,7 +457,7 @@
             this.cbrCheck.Location = new System.Drawing.Point(424, 58);
             this.cbrCheck.Name = "cbrCheck";
             this.cbrCheck.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.cbrCheck.Size = new System.Drawing.Size(109, 17);
+            this.cbrCheck.Size = new System.Drawing.Size(110, 17);
             this.cbrCheck.TabIndex = 26;
             this.cbrCheck.Text = "Constant Bitrate";
             this.cbrCheck.UseVisualStyleBackColor = true;
@@ -473,7 +473,7 @@
             this.vbrCheck.Location = new System.Drawing.Point(430, 26);
             this.vbrCheck.Name = "vbrCheck";
             this.vbrCheck.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.vbrCheck.Size = new System.Drawing.Size(103, 17);
+            this.vbrCheck.Size = new System.Drawing.Size(104, 17);
             this.vbrCheck.TabIndex = 17;
             this.vbrCheck.Text = "Variable Bitrate";
             this.vbrCheck.UseVisualStyleBackColor = true;

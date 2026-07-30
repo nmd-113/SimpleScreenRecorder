@@ -28,44 +28,22 @@ namespace SimpleScreenRecorder
 
         private void InitializeToolTips()
         {
-            toolTip.SetToolTip(topBar, "Drag here to move the window.");
-            toolTip.SetToolTip(appLogo, "Simple Screen Recorder.");
-            toolTip.SetToolTip(appName, "Simple Screen Recorder.");
-            toolTip.SetToolTip(appverLbl, "Current app version.");
-            toolTip.SetToolTip(hideBtn, "Minimize the app to the tray.");
-            toolTip.SetToolTip(exitBtn, "Close the app.");
-
-            toolTip.SetToolTip(audioOptionsSection, "Audio settings for microphone and system sound.");
-            toolTip.SetToolTip(labelMic, "Choose which microphone to include in the recording.");
             toolTip.SetToolTip(comboBoxMic, "Select a microphone for audio input, or leave it on None.");
             toolTip.SetToolTip(cbRecordSystemAudio, "Record system audio such as app sound, music, and browser audio.");
 
-            toolTip.SetToolTip(videoOptionsSection, "Video settings for codec, frame rate, monitor, quality, and recording area.");
-            toolTip.SetToolTip(label2, "Choose the video codec used for the recording.");
             toolTip.SetToolTip(comboBoxCodec, "Choose the video codec: H.264 for compatibility or H.265 for smaller files on supported systems.");
-            toolTip.SetToolTip(fpsLbl, "Choose how smooth the video should look.");
             toolTip.SetToolTip(comboBoxFps, "Higher FPS gives smoother video but larger files and higher GPU/CPU usage.");
-            toolTip.SetToolTip(dspLbl, "Choose which monitor to record.");
             toolTip.SetToolTip(comboBoxMonitor, "Select the display that will be recorded when no custom area is active.");
             toolTip.SetToolTip(trackBarQuality, "Higher quality gives sharper video but larger files.");
-            toolTip.SetToolTip(lblQualityValue, "Shows the current video quality level and estimated bitrate.");
             toolTip.SetToolTip(vbrCheck, "Variable Bitrate adjusts bitrate as needed for smaller files.");
             toolTip.SetToolTip(cbrCheck, "Constant Bitrate keeps bitrate steadier for more predictable file output.");
             toolTip.SetToolTip(btnSelectArea, "Open the area selector and choose a custom part of the screen to record.");
-            toolTip.SetToolTip(btnClearArea, "Clear the selected area and return to full-display recording.");
-            toolTip.SetToolTip(areaStatusLabel, "Shows whether full-display recording or a custom area is currently selected.");
 
-            toolTip.SetToolTip(savePathSection, "Choose where finished recordings will be saved.");
-            toolTip.SetToolTip(txtPath, "Current folder where recordings will be saved.");
             toolTip.SetToolTip(btnBrowse, "Choose a folder for new recordings.");
             toolTip.SetToolTip(showPath, "Open the current recordings folder.");
 
             toolTip.SetToolTip(countdownChkBox, "Wait 3 seconds before recording starts.");
             toolTip.SetToolTip(hideonrecordChkBox, "Automatically minimize the app to the tray after recording starts.");
-            toolTip.SetToolTip(btnStart, "Start recording with the current settings.");
-            toolTip.SetToolTip(btnStop, "Stop the current recording and finalize the video file.");
-            toolTip.SetToolTip(lblStatus, "Shows the current recording state.");
-            toolTip.SetToolTip(lblRecordingTimer, "Shows the elapsed recording time.");
         }
 
         #endregion

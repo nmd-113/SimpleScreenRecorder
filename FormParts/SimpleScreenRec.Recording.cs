@@ -481,43 +481,72 @@ namespace SimpleScreenRecorder
 
         private void Recorder_OnRecordingComplete(object sender, RecordingCompleteEventArgs evt)
         {
-            if (IsHandleCreated && !IsDisposed)
+            if (string.IsNullOrWhiteSpace(evt?.FilePath))
+                return;
+
+            string filePath = evt.FilePath;
+
+            if (!IsHandleCreated || IsDisposed)
+                return;
+
+            try
+            {
                 BeginInvoke((MethodInvoker)(() =>
                 {
+                    if (IsDisposed)
+                        return;
+
                     try
                     {
                         StopAndResetRecordingTimer();
                         _recordingPausedAt = null;
                         FlashLabel(lblStatus, false);
                         StopTrayRecordingIndicator();
+
                         lblStatus.Text = "Status: Saved";
                         SetControlsEnabled(true);
-                        _lastCompletedRecordingFile = evt.FilePath;
-                        string recordingFolder = Path.GetDirectoryName(evt.FilePath) ?? _videosFolder;
-                        txtPath.Text = recordingFolder;
-                        _lastCompletedRecordingFolder = recordingFolder;
-                        openLastRecordingToolStripMenuItem.Enabled = File.Exists(_lastCompletedRecordingFile);
+
+                        _lastCompletedRecordingFile = filePath;
+
+                        string folder = Path.GetDirectoryName(filePath) ?? _videosFolder;
+                        txtPath.Text = folder;
+
+                        _lastCompletedRecordingFolder = folder;
+                        openLastRecordingToolStripMenuItem.Enabled = File.Exists(filePath);
+
                         _outputPath = null;
 
-                        if (notifyIcon.Visible)
+                        if (notifyIcon?.Visible == true)
                         {
                             _isCompletionBalloonActive = true;
                             notifyIcon.BalloonTipTitle = "Recording Complete";
-                            notifyIcon.BalloonTipText = "Recording saved to:\n" + evt.FilePath;
+                            notifyIcon.BalloonTipText = "Saved:\n" + filePath;
                             notifyIcon.ShowBalloonTip(6000);
                         }
                         else
                         {
-                            MessageBox.Show("Recording saved:\n" + evt.FilePath,
-                                "Finished", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            MessageBox.Show(this,
+                                "Recording saved:\n" + filePath,
+                                "Finished",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Information);
                         }
                     }
-                    catch (Exception ex2)
+                    catch (Exception ex)
                     {
-                        MessageBox.Show("Error after saving recording:\n" + ex2.Message,
-                            "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        if (!IsDisposed)
+                            MessageBox.Show(this,
+                                "Error:\n" + ex.Message,
+                                "Error",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Error);
                     }
                 }));
+            }
+            catch
+            {
+                // optional logging only
+            }
         }
 
         private void Recorder_OnStatusChanged(object sender, RecordingStatusEventArgs evt)

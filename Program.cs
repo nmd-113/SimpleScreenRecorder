@@ -1,90 +1,115 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace SimpleScreenRecorder
 {
     internal static class Program
     {
-        private static readonly string TempFolderPath = Path.Combine(Path.GetTempPath(), "SimpleScreenRecorder_DLLs");
+        private static readonly string TempFolderPath =
+            Path.Combine(Path.GetTempPath(),
+            "SimpleScreenRecorder_DLLs_" + Process.GetCurrentProcess().Id);
+
+        private static readonly string DllPath =
+            Path.Combine(TempFolderPath, "ScreenRecorderLib.dll");
 
         [STAThread]
         static void Main()
         {
-            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
+            using (var mutex = new Mutex(true, @"Global\SimpleScreenRecorder", out bool createdNew))
+            {
+                if (!createdNew)
+                    return;
 
-            CleanupTempFolder();
+                AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
 
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new ScreenRecorder());
+                CleanupTempFolders();
 
-            CleanupTempFolder();
+                Application.EnableVisualStyles();
+                Application.SetCompatibleTextRenderingDefault(false);
+                Application.Run(new ScreenRecorder());
+            }
         }
 
         private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
         {
-            string assemblyName = new AssemblyName(args.Name).Name + ".dll";
+            string requestedName = new AssemblyName(args.Name).Name;
 
-            if (assemblyName.Equals("ScreenRecorderLib.dll", StringComparison.OrdinalIgnoreCase))
+            if (!requestedName.Equals("ScreenRecorderLib", StringComparison.OrdinalIgnoreCase))
+                return null;
+
+            try
             {
-                string resourceName = "SimpleScreenRecorder.Resources." + assemblyName;
+                Directory.CreateDirectory(TempFolderPath);
 
-                string tempFilePath = Path.Combine(TempFolderPath, assemblyName);
-
-                try
+                if (!File.Exists(DllPath))
                 {
-                    Directory.CreateDirectory(TempFolderPath);
-
-                    if (!File.Exists(tempFilePath))
-                    {
-                        ExtractResourceToFile(resourceName, tempFilePath);
-                    }
-
-                    return Assembly.LoadFrom(tempFilePath);
+                    ExtractResourceToFile(
+                        "SimpleScreenRecorder.Resources.ScreenRecorderLib.dll",
+                        DllPath);
                 }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Eroare la extragerea/încărcarea {assemblyName}:\n{ex.Message}", "Eroare de Încărcare DLL", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return null;
-                }
+
+                return Assembly.LoadFrom(DllPath);
             }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
 
-            return null;
+                MessageBox.Show(
+                    "DLL load failed:\n" + ex.Message,
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+
+                return null;
+            }
         }
 
         private static void ExtractResourceToFile(string resourceName, string targetPath)
         {
-            Assembly executingAssembly = Assembly.GetExecutingAssembly();
+            Assembly asm = Assembly.GetExecutingAssembly();
 
-            string actualResourceName = executingAssembly.GetManifestResourceNames()
-                .FirstOrDefault(name => name.EndsWith(resourceName.Split('.').Last(), StringComparison.OrdinalIgnoreCase)) ?? throw new FileNotFoundException($"Resursa încorporată '{resourceName}' nu a putut fi găsită în asamblare.");
-            using (Stream stream = executingAssembly.GetManifestResourceStream(actualResourceName))
-            using (FileStream fileStream = new FileStream(targetPath, FileMode.Create, FileAccess.Write))
+            Stream stream = asm.GetManifestResourceStream(resourceName);
+            if (stream == null)
+                throw new FileNotFoundException("Embedded DLL not found: " + resourceName);
+
+            using (stream)
+            using (FileStream fs = new FileStream(targetPath, FileMode.Create, FileAccess.Write))
             {
-                if (stream == null)
-                {
-                    throw new FileNotFoundException($"Stream-ul resursei '{actualResourceName}' este null.");
-                }
-
-                stream.CopyTo(fileStream);
+                stream.CopyTo(fs);
             }
         }
 
-        private static void CleanupTempFolder()
+        private static void CleanupTempFolders()
         {
             try
             {
-                if (Directory.Exists(TempFolderPath))
+                string baseTemp = Path.GetTempPath();
+                string currentFolderName = "SimpleScreenRecorder_DLLs_" + Process.GetCurrentProcess().Id;
+
+                foreach (var dir in Directory.GetDirectories(baseTemp, "SimpleScreenRecorder_DLLs_*"))
                 {
-                    Directory.Delete(TempFolderPath, true);
+                    try
+                    {
+                        if (Path.GetFileName(dir) == currentFolderName)
+                            continue;
+
+                        Directory.Delete(dir, true);
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
                 }
+
+                Directory.CreateDirectory(TempFolderPath);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                /// Ignore any exceptions during cleanup
+                Debug.WriteLine("Startup cleanup failed: " + ex.Message);
             }
         }
     }
