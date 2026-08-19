@@ -138,6 +138,7 @@ For building the project:
 - If the selected area crosses multiple monitors, the app records the main part of the selected area.
 - On some mixed-DPI multi-monitor setups, selected-area recording may be slightly offset.
 - H.265 support depends on your PC/GPU.
+- Recording functionality is powered by [ScreenRecorderLib](https://github.com/sskodje/ScreenRecorderLib), an open-source C# screen recording library.
 
 ---
 
