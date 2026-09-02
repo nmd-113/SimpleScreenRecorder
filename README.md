@@ -95,7 +95,7 @@ Choose:
 
 ## Hotkeys
 
-- **F9** = Start recording
+- **F9** = Start/Pause recording
 - **F10** = Stop recording
 
 If another app already uses these keys, Simple Screen Recorder will show a warning.
@@ -112,6 +112,7 @@ You can:
 
 - Show the app
 - Start recording
+- Pause recording
 - Stop recording
 - Open recordings folder
 - Open last recording
