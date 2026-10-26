@@ -53,11 +53,14 @@
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>screenrec.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="ScreenRecorderLib, Version=1.0.9160.28578, Culture=neutral, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>Resources\ScreenRecorderLib.dll</HintPath>
+      <Private Condition="'$(Configuration)' != 'Release' or '$(DesignTimeBuild)' == 'true'">True</Private>
+      <Private Condition="'$(Configuration)' == 'Release' and '$(DesignTimeBuild)' != 'true'">False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -76,6 +79,11 @@
   <ItemGroup>
     <!-- Main forms and partials -->
     <Compile Include="SimpleScreenRec.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="EmbeddedFont.cs" />
+    <Compile Include="FormParts\SimpleScreenRec.Appearance.cs">
+      <DependentUpon>..\SimpleScreenRec.cs</DependentUpon>
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="FormParts\SimpleScreenRec.Helpers.cs">
@@ -151,7 +159,14 @@
   <ItemGroup>
     <None Include="Resources\icon_naetech_small.png" />
     <EmbeddedResource Include="Resources\ScreenRecorderLib.dll" />
+    <EmbeddedResource Include="Resources\JetBrainsMono-Regular.ttf">
+      <LogicalName>SimpleScreenRecorder.Resources.JetBrainsMono-Regular.ttf</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\JetBrainsMono-OFL.txt">
+      <LogicalName>SimpleScreenRecorder.Resources.JetBrainsMono-OFL.txt</LogicalName>
+    </EmbeddedResource>
     <None Include="Resources\border.png" />
+    <None Include="app.manifest" />
     <Content Include="screenrec.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

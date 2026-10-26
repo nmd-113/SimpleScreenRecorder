@@ -51,6 +51,13 @@ namespace SimpleScreenRecorder
             if (IsInDesignMode())
                 return;
 
+            try
+            {
+                int value = 2;
+                DwmSetWindowAttribute(Handle, 33, ref value, 4);
+            }
+            catch { }
+
             RegisterHotkeys();
             UpdateSelectedAreaOverlay();
         }
@@ -142,12 +149,27 @@ namespace SimpleScreenRecorder
 
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
-            if (_startHotkeyRegistered)
-                UnregisterHotKey(Handle, HOTKEY_ID_START);
-            if (_stopHotkeyRegistered)
-                UnregisterHotKey(Handle, HOTKEY_ID_STOP);
-            CleanupTrayRecordingIndicator();
             base.OnFormClosing(e);
+
+            // FormClosing handlers can cancel the close (for example, when the user
+            // chooses to keep an active recording). Keep app-wide resources alive
+            // until the form is actually allowed to close.
+            if (!e.Cancel)
+            {
+                if (_startHotkeyRegistered)
+                {
+                    UnregisterHotKey(Handle, HOTKEY_ID_START);
+                    _startHotkeyRegistered = false;
+                }
+
+                if (_stopHotkeyRegistered)
+                {
+                    UnregisterHotKey(Handle, HOTKEY_ID_STOP);
+                    _stopHotkeyRegistered = false;
+                }
+
+                CleanupTrayRecordingIndicator();
+            }
         }
 
         #endregion

@@ -35,13 +35,13 @@ namespace SimpleScreenRecorder
             // 
             // lblInstructions
             // 
-            this.lblInstructions.AutoSize = true;
+            this.lblInstructions.AutoSize = false;
             this.lblInstructions.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(24)))), ((int)(((byte)(26)))), ((int)(((byte)(28)))));
             this.lblInstructions.ForeColor = System.Drawing.Color.White;
             this.lblInstructions.Location = new System.Drawing.Point(8, 35);
             this.lblInstructions.Name = "lblInstructions";
             this.lblInstructions.Padding = new System.Windows.Forms.Padding(6, 4, 6, 4);
-            this.lblInstructions.Size = new System.Drawing.Size(240, 21);
+            this.lblInstructions.Size = new System.Drawing.Size(1240, 46);
             this.lblInstructions.TabIndex = 1;
             this.lblInstructions.Text = "Enter: Confirm  |  Esc: Cancel  |  Double-click: Confirm";
             // 
@@ -49,10 +49,16 @@ namespace SimpleScreenRecorder
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
+            this.BackColor = System.Drawing.Color.DeepSkyBlue;
             this.ClientSize = new System.Drawing.Size(1280, 720);
             this.Controls.Add(this.lblInstructions);
             this.Controls.Add(this.lblCurrentSize);
+            this.Font = new System.Drawing.Font("JetBrains Mono", 9.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
+            this.KeyPreview = true;
+            this.MinimumSize = new System.Drawing.Size(320, 180);
             this.Name = "RegionSelectorForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "Select Recording Area";
             this.DoubleClick += new System.EventHandler(this.RegionSelectorForm_DoubleClick);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.RegionSelectorForm_KeyDown);

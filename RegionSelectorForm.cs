@@ -1,4 +1,6 @@
 using System;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -14,9 +16,18 @@ namespace SimpleScreenRecorder
 
         #region Constructor
 
+        public RegionSelectorForm() : this(Rectangle.Empty)
+        {
+        }
+
         public RegionSelectorForm(Rectangle initialBounds)
         {
             InitializeComponent();
+
+            if (IsInDesignMode())
+                return;
+
+            EmbeddedFont.Apply(this);
 
             KeyPreview = true;
             StartPosition = FormStartPosition.Manual;
@@ -41,8 +52,22 @@ namespace SimpleScreenRecorder
 
         private void UpdateSizeLabel()
         {
+            if (IsInDesignMode())
+                return;
+
             lblCurrentSize.Text = $"{Width} x {Height}";
+            lblInstructions.Width = Math.Max(120, ClientSize.Width - lblInstructions.Left - 8);
             SelectedBounds = Bounds;
+        }
+
+        private bool IsInDesignMode()
+        {
+            if (LicenseManager.UsageMode == LicenseUsageMode.Designtime ||
+                DesignMode || (Site != null && Site.DesignMode))
+                return true;
+
+            return Process.GetCurrentProcess().ProcessName.IndexOf(
+                "devenv", StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
         #endregion

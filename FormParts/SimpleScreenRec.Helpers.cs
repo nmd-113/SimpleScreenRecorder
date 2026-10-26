@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -22,6 +23,9 @@ namespace SimpleScreenRecorder
         private List<RecordableDisplay> _availableDisplays;
         private Rectangle? _selectedRecordingRegion;
         private SelectedAreaOverlayForm _selectedAreaOverlay;
+
+        [DllImport("dwmapi.dll")]
+        private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int value, int size);
 
         #endregion
 
@@ -295,20 +299,20 @@ namespace SimpleScreenRecorder
 
         private void UpdatePrimaryActionUi()
         {
-            string buttonText = "⚫ Start Recording (F9)";
-            string menuText = "⚫ Start Recording";
+            string buttonText = "Start Recording (F9)";
+            string menuText = "Start Recording";
             string tooltipText = "Start recording with the current settings.";
 
             if (_recorder != null && _recorder.Status == RecorderStatus.Paused)
             {
-                buttonText = "▶︎ Resume Recording (F9)";
-                menuText = "▶︎ Resume Recording";
+                buttonText = "Resume Recording (F9)";
+                menuText = "Resume Recording";
                 tooltipText = "Resume the paused recording.";
             }
             else if (_recorder != null && _recorder.Status == RecorderStatus.Recording)
             {
-                buttonText = "❚❚ Pause Recording (F9)";
-                menuText = "❚❚ Pause Recording";
+                buttonText = "Pause Recording (F9)";
+                menuText = "Pause Recording";
                 tooltipText = "Pause the current recording.";
             }
 
@@ -517,7 +521,7 @@ namespace SimpleScreenRecorder
             if (LicenseManager.UsageMode == LicenseUsageMode.Designtime)
                 return true;
 
-            if (DesignMode)
+            if (DesignMode || (Site != null && Site.DesignMode))
                 return true;
 
             string processName = Process.GetCurrentProcess().ProcessName;

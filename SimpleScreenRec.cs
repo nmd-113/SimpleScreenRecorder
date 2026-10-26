@@ -11,26 +11,26 @@ namespace SimpleScreenRecorder
         {
             InitializeComponent();
 
+            if (IsInDesignMode())
+                return;
+
+            ApplyUiAppearance();
+
             appverLbl.Text = "by NaeTech  |  v" + Application.ProductVersion;
             notifyIcon.ContextMenuStrip = contextMenuStrip;
             notifyIcon.BalloonTipClicked += NotifyIcon_BalloonTipClicked;
 
-            bool isDesignMode = IsInDesignMode();
-            if (!isDesignMode)
+            try
             {
                 InitializeTrayRecordingIndicator();
-
-                try
-                {
-                    LoadAudioDevices();
-                    DetectMonitors();
-                    LoadSettings();
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Error loading settings or devices: " + ex.Message, "Error",
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
+                LoadAudioDevices();
+                DetectMonitors();
+                LoadSettings();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading settings or devices: " + ex.Message, "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
             if (string.IsNullOrWhiteSpace(txtPath.Text))
@@ -55,11 +55,21 @@ namespace SimpleScreenRecorder
 
         private async void ScreenRecorder_FormClosing(object sender, FormClosingEventArgs e)
         {
+            if (IsInDesignMode())
+                return;
+
             SaveSettings();
 
             if (_isClosingAfterRecordingStop)
             {
                 e.Cancel = false;
+                return;
+            }
+
+            if (_isStartingRecording)
+            {
+                e.Cancel = true;
+                ShowTemporaryCooldownStatus("Status: Please wait for startup to finish before exiting...");
                 return;
             }
 

@@ -14,6 +14,7 @@ namespace SimpleScreenRecorder
 
         private Recorder _recorder;
         private bool _isStoppingRecording;
+        private bool _isStartingRecording;
         private bool _isClosingAfterRecordingStop;
         private bool _isCountdownActive;
         private Task _currentStopTask = Task.CompletedTask;
@@ -41,6 +42,8 @@ namespace SimpleScreenRecorder
         private async Task HandlePrimaryRecordingActionAsync(object sender, EventArgs e)
         {
             if (_isStoppingRecording)
+                return;
+            if (_isStartingRecording)
                 return;
             if (_isCountdownActive)
                 return;
@@ -70,6 +73,8 @@ namespace SimpleScreenRecorder
         {
             if (_isStoppingRecording)
                 return;
+            if (_isStartingRecording)
+                return;
             if (_isCountdownActive)
                 return;
 
@@ -91,6 +96,10 @@ namespace SimpleScreenRecorder
                 ShowTemporaryCooldownStatus("Status: Please wait before starting again...");
                 return;
             }
+
+            // Hotkeys remain active while the UI is preparing the recorder. Claim
+            // startup synchronously so a second request cannot create another one.
+            _isStartingRecording = true;
 
             try
             {
@@ -212,6 +221,10 @@ namespace SimpleScreenRecorder
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 SetControlsEnabled(true);
             }
+            finally
+            {
+                _isStartingRecording = false;
+            }
         }
 
         private async Task StopRecording(object sender, EventArgs e)
@@ -251,19 +264,10 @@ namespace SimpleScreenRecorder
             {
                 MessageBox.Show("Error stopping recording:\n" + ex.Message, "Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
-                if (_recorder != null)
-                {
-                    UnsubscribeRecorderEvents(_recorder);
-                    _recorder.Dispose();
-                    _recorder = null;
-                }
-                _outputPath = null;
-                _recordingPausedAt = null;
-                StopAndResetRecordingTimer();
-                StopTrayRecordingIndicator();
-                FlashLabel(lblStatus, false);
-                SetNextStartAllowedUtc(DateTime.UtcNow.Add(RecordingActionCooldown));
-                SetControlsEnabled(true);
+                lblStatus.Text = "Status: Stop failed; recorder may still be finalizing.";
+                if (_recorder != null &&
+                    (_recorder.Status == RecorderStatus.Recording || _recorder.Status == RecorderStatus.Paused))
+                    SetControlsEnabled(false);
             }
         }
 
@@ -474,8 +478,22 @@ namespace SimpleScreenRecorder
                 lblStatus.Text = "Status: Error";
                 _outputPath = null;
                 SetControlsEnabled(true);
-                _ = StopAndDisposeRecorderAsync();
+                _ = StopRecorderAfterFailureAsync();
             });
+        }
+
+        private async Task StopRecorderAfterFailureAsync()
+        {
+            try
+            {
+                await StopAndDisposeRecorderAsync();
+            }
+            catch (Exception ex)
+            {
+                // The recording failure is already reported to the user. Keep the
+                // recorder alive if shutdown did not complete, and observe the task.
+                Debug.WriteLine("Error cleaning up failed recorder: " + ex.Message);
+            }
         }
 
         private void Recorder_OnRecordingComplete(object sender, RecordingCompleteEventArgs evt)
@@ -604,6 +622,8 @@ namespace SimpleScreenRecorder
             }
 
             EventHandler<RecordingCompleteEventArgs> onComplete = null;
+            bool stopCompleted = recorder.Status != RecorderStatus.Recording &&
+                recorder.Status != RecorderStatus.Paused;
 
             try
             {
@@ -619,13 +639,16 @@ namespace SimpleScreenRecorder
                     Task completedTask = await Task.WhenAny(tcs.Task, Task.Delay(TimeSpan.FromSeconds(10)));
                     if (completedTask != tcs.Task)
                     {
-                        Debug.WriteLine("Timed out waiting for OnRecordingComplete while stopping recorder.");
+                        throw new TimeoutException("Timed out waiting for the recording file to finish. The recorder was left available so finalization can complete.");
                     }
+
+                    stopCompleted = true;
                 }
             }
             catch (Exception ex)
             {
                 Debug.WriteLine("Error stopping/disposing recorder: " + ex.Message);
+                throw;
             }
             finally
             {
@@ -641,33 +664,47 @@ namespace SimpleScreenRecorder
                     }
                 }
 
-                try
+                if (stopCompleted)
                 {
-                    UnsubscribeRecorderEvents(recorder);
-                    recorder.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine("Error disposing recorder: " + ex.Message);
-                }
+                    try
+                    {
+                        UnsubscribeRecorderEvents(recorder);
+                        recorder.Dispose();
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine("Error disposing recorder: " + ex.Message);
+                    }
 
-                _recorder = null;
-                _outputPath = null;
-                _recordingPausedAt = null;
-                StopAndResetRecordingTimer();
-                StopTrayRecordingIndicator();
-                FlashLabel(lblStatus, false);
-                SetNextStartAllowedUtc(DateTime.UtcNow.Add(RecordingActionCooldown));
+                    _recorder = null;
+                    _outputPath = null;
+                    _recordingPausedAt = null;
+                    StopAndResetRecordingTimer();
+                    StopTrayRecordingIndicator();
+                    FlashLabel(lblStatus, false);
+                    SetNextStartAllowedUtc(DateTime.UtcNow.Add(RecordingActionCooldown));
 
-                if (!_isClosingAfterRecordingStop && IsHandleCreated && !IsDisposed)
+                    if (!_isClosingAfterRecordingStop && IsHandleCreated && !IsDisposed)
+                    {
+                        if (InvokeRequired)
+                        {
+                            BeginInvoke((MethodInvoker)(() => SetControlsEnabled(true)));
+                        }
+                        else
+                        {
+                            SetControlsEnabled(true);
+                        }
+                    }
+                }
+                else if (!_isClosingAfterRecordingStop && IsHandleCreated && !IsDisposed)
                 {
                     if (InvokeRequired)
                     {
-                        BeginInvoke((MethodInvoker)(() => SetControlsEnabled(true)));
+                        BeginInvoke((MethodInvoker)(() => SetControlsEnabled(false)));
                     }
                     else
                     {
-                        SetControlsEnabled(true);
+                        SetControlsEnabled(false);
                     }
                 }
 
