@@ -361,7 +361,7 @@
             this.appverLbl.Name = "appverLbl";
             this.appverLbl.Size = new System.Drawing.Size(543, 18);
             this.appverLbl.TabIndex = 19;
-            this.appverLbl.Text = "by NaeTech  |  v1.1.0.4";
+            this.appverLbl.Text = "by NaeTech  |  v1.1.0.3";
             this.appverLbl.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.appverLbl.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Handle_Window_Drag);
             // 
