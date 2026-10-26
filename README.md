@@ -4,7 +4,7 @@ Simple Screen Recorder is a lightweight Windows app for recording your screen.
 
 You can record the full screen, one monitor, or only a selected part of the screen.
 
-![Screenshot](https://naetech.ro/wp-content/uploads/2025/SimpleScreenRecorder/simplescreenrecorder.jpg?v1.1.0.3)
+![Screenshot](https://naetech.ro/wp-content/uploads/2025/SimpleScreenRecorder/simplescreenrecorder.png?v1.1.0.3)
 
 ---
 
