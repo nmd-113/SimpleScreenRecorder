@@ -15,7 +15,7 @@ You can record the full screen, one monitor, or only a selected part of the scre
 - Record Windows audio
 - Record microphone audio
 - Choose H.264 or H.265 video
-- Choose 30, 60, or 120 FPS
+- Choose 15, 30, 60, or 120 FPS
 - Choose video quality level
 - Use CBR or VBR recording mode
 - Optional 3-second countdown
@@ -70,6 +70,7 @@ Click **Clear** to return to full-display recording.
 
 Choose:
 
+- **15 FPS - Low**
 - **30 FPS - Standard**
 - **60 FPS - Smooth**
 - **120 FPS - Very Smooth**
