@@ -95,7 +95,7 @@ Choose:
 
 ## Hotkeys
 
-- **F9** = Start recording
+- **F9** = Start/Pause recording
 - **F10** = Stop recording
 
 If another app already uses these keys, Simple Screen Recorder will show a warning.
@@ -112,6 +112,7 @@ You can:
 
 - Show the app
 - Start recording
+- Pause recording
 - Stop recording
 - Open recordings folder
 - Open last recording
@@ -138,6 +139,7 @@ For building the project:
 - If the selected area crosses multiple monitors, the app records the main part of the selected area.
 - On some mixed-DPI multi-monitor setups, selected-area recording may be slightly offset.
 - H.265 support depends on your PC/GPU.
+- Recording functionality is powered by [ScreenRecorderLib](https://github.com/sskodje/ScreenRecorderLib), an open-source C# screen recording library.
 
 ---
 
