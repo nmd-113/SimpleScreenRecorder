@@ -134,6 +134,26 @@ For building the project:
 
 ---
 
+## Antivirus Notice
+
+**Important: Known False Positive Antivirus Detection**
+
+Simple Screen Recorder is a legitimate screen recording application. However, the current release is known to trigger **false positive antivirus detections**.
+
+This happens because the application is distributed as a single executable with embedded dependencies and uses screen recording functionality, which can trigger heuristic antivirus detection.
+
+**Please note:**
+
+- Antivirus software may repeatedly detect the application as a potential threat.
+- These detections are known false positives for the official, unmodified release.
+- The application is open source, and its code can be inspected on GitHub.
+- Always download the application from the official source and verify the file before running it.
+- Do not disable your antivirus protection simply to run the application.
+
+**This is a known issue with antivirus detection, not an indication that the official application is malware.**
+
+---
+
 ## Notes
 
 - Selected-area recording works best when the selected area is fully inside one monitor.
