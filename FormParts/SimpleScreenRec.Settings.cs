@@ -1,4 +1,6 @@
 using System;
+using System.Configuration;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
@@ -11,6 +13,20 @@ namespace SimpleScreenRecorder
 
         private void LoadSettings()
         {
+            try
+            {
+                // .NET stores user settings by application version. Import the
+                // previous version only when this version has no saved settings.
+                string settingsPath = ConfigurationManager.OpenExeConfiguration(
+                    ConfigurationUserLevel.PerUserRoamingAndLocal).FilePath;
+                if (!File.Exists(settingsPath))
+                    Properties.Settings.Default.Upgrade();
+            }
+            catch (ConfigurationErrorsException ex)
+            {
+                Debug.WriteLine("Previous settings could not be upgraded: " + ex.Message);
+            }
+
             string savedPath = Properties.Settings.Default.OutputPath;
             string normalizedPath = string.IsNullOrWhiteSpace(savedPath)
                 ? _videosFolder
