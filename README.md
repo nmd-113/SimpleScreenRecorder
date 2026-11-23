@@ -1,6 +1,6 @@
 # Simple Screen Recorder
 
-Simple Screen Recorder **v1.1.0.4** is a lightweight, portable Windows screen recorder.
+Simple Screen Recorder is a lightweight, portable Windows screen recorder.
 
 Record a full display or a selected area, with Windows audio, microphone audio, or both.
 Save your recordings as MP4 files and control recording with buttons, hotkeys, or the tray menu.
