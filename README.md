@@ -1,8 +1,11 @@
 # Simple Screen Recorder
 
-Simple Screen Recorder **v1.1.0.4** is a lightweight Windows app for recording your screen.
+Simple Screen Recorder **v1.1.0.4** is a lightweight, portable Windows screen recorder.
 
-You can record the full screen, one monitor, or only a selected part of the screen.
+Record a full display or a selected area, with Windows audio, microphone audio, or both.
+Save your recordings as MP4 files and control recording with buttons, hotkeys, or the tray menu.
+
+**[Download Simple Screen Recorder](https://github.com/nmd-113/SimpleScreenRecorder/releases)**
 
 ![Screenshot](https://naetech.ro/wp-content/uploads/2025/SimpleScreenRecorder/simplescreenrecorder.png?v1.1.0.3)
 
@@ -30,12 +33,11 @@ You can record the full screen, one monitor, or only a selected part of the scre
 
 Download `SimpleScreenRecorder.exe` from the [official GitHub releases](https://github.com/nmd-113/SimpleScreenRecorder/releases),
 save it to a folder, and run it. No application installation or administrator
-privileges are required. The distribution needs only this EXE; application DLLs,
-configuration files, and debugging symbols do not need to accompany it.
+privileges are required. You only need the EXE and the runtimes listed under
+[Requirements](#requirements).
 
-To retain preferences when upgrading, replace the EXE in the same folder with the
-same filename. On first launch, v1.1.0.4 imports the previous version's saved settings
-if it has no settings of its own yet.
+To update, close the app and replace the EXE in the same folder, keeping the same
+filename so your saved preferences can carry over.
 
 1. Open **Simple Screen Recorder**.
 2. Choose where recordings should be saved.
@@ -48,12 +50,13 @@ if it has no settings of its own yet.
    - Quality
    - CBR or VBR
 5. Choose what to record:
-   - Leave area empty to record the full display.
+   - Choose a monitor to record its full display.
    - Click **Select Area** to record only part of the screen.
 6. Click **Start Recording** or press **F9**.
 7. Click **Stop Recording** or press **F10**.
 
-While recording, click the primary button or press **F9** to pause. Use it again to resume.
+While recording, click **Pause Recording** or press **F9** to pause. Click
+**Resume Recording** or press **F9** again to continue.
 
 ---
 
@@ -142,35 +145,14 @@ You can:
 These runtime prerequisites may already be present. Windows N/KN editions may need
 the Media Feature Pack. The application does not install or update prerequisites.
 
-For building the project:
-
-- Visual Studio 2022 recommended
-- .NET Framework 4.8 Developer Pack
-
-Build **Release | x64**. Distribute only `SimpleScreenRecorder.exe`; the generated
-PDB is optional debugging information and should stay outside the distribution.
-
 ---
 
 ## Antivirus Notice
 
-Historical VirusTotal results supplied for this project were **32/68 detections**
-for the original v1.1.0.3 release and **1/71** for the audited candidate, with only
-Malwarebytes reporting `Malware.AI.4183176083`. That candidate predates the 1.1.0.4
-version update and has SHA-256:
-
-`10b7d164db9c4b02aa74cdf9cc243365c00f574e8346b6c85bcbd609d9d40869`
-
-The audit improved private temporary DLL extraction, SHA-256 integrity verification,
-and controlled cleanup. The maintainer also reports **1/71 detections** in a
-follow-up scan of the rebuilt **v1.1.0.4** EXE, with SHA-256:
-
-`1c01ed9b68486dd39802c47357a4636a1bc3841dcb93b74fa5e75ea6cfc45a44`
-
-These results concern the specific files scanned; they do not guarantee that a file
-is malware-free or that future builds will receive the same result. Keep antivirus
-protection enabled, verify the downloaded file's published hash, and report
-suspected false positives to the detecting vendor.
+Some antivirus products may flag the app. Download only from the
+[official releases](https://github.com/nmd-113/SimpleScreenRecorder/releases) and keep
+your antivirus protection enabled. If you receive a warning, check it with the
+antivirus vendor before running the app.
 
 ---
 
@@ -180,7 +162,16 @@ suspected false positives to the detecting vendor.
 - If the selected area crosses multiple monitors, the app records the main part of the selected area.
 - On some mixed-DPI multi-monitor setups, selected-area recording may be slightly offset.
 - H.265 support depends on your PC/GPU.
-- Recording functionality uses the embedded [ScreenRecorderLib](https://github.com/sskodje/ScreenRecorderLib) **6.5.1 x64** library. It is extracted to a private temporary directory for native loading; locked files may remain until a later launch can safely clean them up.
+
+---
+
+## Build from Source
+
+Use Visual Studio 2022 with the .NET Framework 4.8 Developer Pack. Open
+`SimpleScreenRecorder.sln`, select **Release | x64**, and build.
+
+The executable is generated in `bin\x64\Release`. Distribute only
+`SimpleScreenRecorder.exe`; the PDB is optional debugging information.
 
 ---
 
@@ -188,6 +179,6 @@ suspected false positives to the detecting vendor.
 
 The application is distributed under the [MIT License](LICENSE.txt).
 
-ScreenRecorderLib's [MIT license](Resources/ScreenRecorderLib-LICENSE.txt) and the
-embedded JetBrains Mono font's [SIL Open Font License](Resources/JetBrainsMono-OFL.txt)
-are retained in the source and embedded in the executable.
+Recording is powered by [ScreenRecorderLib 6.5.1](https://github.com/sskodje/ScreenRecorderLib),
+licensed under [MIT](Resources/ScreenRecorderLib-LICENSE.txt). The embedded JetBrains
+Mono font uses the [SIL Open Font License](Resources/JetBrainsMono-OFL.txt).
